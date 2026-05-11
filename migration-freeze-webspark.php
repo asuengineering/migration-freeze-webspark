@@ -65,6 +65,7 @@ if ( ! defined( 'MFW_STATE_DECOMMISSIONED' ) ) {
 require_once MFW_PLUGIN_PATH . 'inc/helpers.php';
 require_once MFW_PLUGIN_PATH . 'inc/site-state.php';
 require_once MFW_PLUGIN_PATH . 'inc/admin-notices.php';
+require_once MFW_PLUGIN_PATH . 'inc/my-sites.php';
 require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
 require_once MFW_PLUGIN_PATH . 'inc/settings.php';
 
