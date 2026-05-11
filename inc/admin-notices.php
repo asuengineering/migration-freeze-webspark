@@ -53,14 +53,15 @@ function mfw_render_state_notice( $context = 'admin' ) {
 			break;
 	}
 
-	$label = isset( $state_config['label'] ) ? $state_config['label'] : ucfirst( $state );
+	$label   = isset( $state_config['label'] ) ? $state_config['label'] : ucfirst( $state );
 	$message = isset( $state_config['message'] ) ? $state_config['message'] : '';
-	$action = isset( $state_config['action'] ) ? $state_config['action'] : '';
+	$link    = isset( $state_config['action'] ) ? $state_config['action'] : '';
 	?>
 	<div class="notice <?php echo esc_attr( $class ); ?> mfw-state-notice mfw-state-notice-<?php echo esc_attr( sanitize_html_class( $state ) ); ?>" style="<?php echo esc_attr( $style ); ?>">
-		<p><strong><?php echo esc_html( $label ); ?>:</strong> <?php echo esc_html( $message ); ?></p>
-		<?php if ( '' !== $action ) : ?>
-			<p><?php echo esc_html( $action ); ?></p>
+		<p><strong><?php echo esc_html( $label ); ?></strong></p>
+		<p><?php echo esc_html( $message ); ?></p>
+		<?php if ( '' !== $link ) : ?>
+			<p><a href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $link ); ?></a></p>
 		<?php endif; ?>
 	</div>
 	<?php

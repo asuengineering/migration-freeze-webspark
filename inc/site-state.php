@@ -17,29 +17,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 function mfw_get_site_states() {
 	return array(
 		MFW_STATE_PENDING => array(
-			'label'   => 'Pending Migration',
-			'message' => 'Migration preparation is underway. A content freeze is imminent.',
-			'action'  => 'No changes are made to site users yet.',
+			'label'   => 'Migration Pending',
+			'message' => 'ASU Engineering is migrating websites from WordPress to the university-supported Drupal platform, Webspark. Site owners and site operators should have received email communication regarding migration timelines, training opportunities, and support office hours. Further details can be found at comm.engineering.',
+			'action'  => 'https://comm.engineering.asu.edu/web-services/webspark/',
 		),
 		MFW_STATE_ACTIVE => array(
 			'label'   => 'Migration Active',
-			'message' => 'Migration is in progress. Approved migration team members remain site admins and all other site users are demoted to subscriber.',
-			'action'  => 'Promote the migration team; demote non-team users to subscriber.',
+			'message' => 'This website is currently being migrated to ASU’s university-supported Webspark platform. During the migration process, editing access to this website has been temporarily limited while content and functionality are reviewed and transferred.',
+			'action'  => 'https://comm.engineering.asu.edu/web-services/webspark/',
 		),
 		MFW_STATE_COMPLETE => array(
 			'label'   => 'Migration Complete',
-			'message' => 'Migration is complete. The site remains available while UAT or follow-up review continues.',
-			'action'  => 'Leave all current users unchanged.',
+			'message' => 'This website has been migrated to ASU’s university-supported Webspark platform. The previous WordPress site is currently being retained temporarily while final review and transition activities are completed.',
+			'action'  => 'https://comm.engineering.asu.edu/web-services/webspark/',
 		),
 		MFW_STATE_UAT_COMPLETE => array(
-			'label'   => 'UAT Complete',
-			'message' => 'User acceptance testing is complete. The migration team can now be removed from the site before final cleanup.',
-			'action'  => 'Remove the migration team from this site; leave everyone else in place for the final cleanup step.',
+			'label'   => 'Migration Complete',
+			'message' => 'This website has been migrated to ASU’s university-supported Webspark platform, and the site domain has already transitioned to the new environment. If you still require access to the migrated website or need assistance locating project resources, please submit a project request through the ASU Engineering communications team.',
+			'action'  => 'https://comm.engineering.asu.edu/web-services/webspark/',
 		),
 		MFW_STATE_DECOMMISSIONED => array(
-			'label'   => 'Decommissioned',
-			'message' => 'This site is scheduled for removal. Site access will be reduced to no role assignment for everyone except the current operator.',
-			'action'  => 'Remove site role assignments for all users except the current operator.',
+			'label'   => 'Site Scheduled for Decommission',
+			'message' => 'This legacy WordPress website is scheduled for permanent decommission and removal. If this site needs to be retained for any reason, please contact the ASU Engineering communications team as soon as possible.',
+			'action'  => 'https://comm.engineering.asu.edu/web-services/webspark/',
 		),
 	);
 }
