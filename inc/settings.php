@@ -70,8 +70,9 @@ function mfw_handle_state_update() {
 function mfw_render_settings_page() {
 	$state        = mfw_get_site_state();
 	$states       = mfw_get_site_states();
-	$current_name = isset( $states[ $state ]['label'] ) ? $states[ $state ]['label'] : '';
 	$report       = get_transient( mfw_get_state_report_key() );
+	$team         = mfw_get_migration_assistant_directory();
+	$current_name = isset( $states[ $state ]['label'] ) ? $states[ $state ]['label'] : '';
 
 	if ( $report ) {
 		delete_transient( mfw_get_state_report_key() );
@@ -143,6 +144,26 @@ function mfw_render_settings_page() {
 						<td><strong><?php echo esc_html( $state_config['label'] ); ?></strong></td>
 						<td><?php echo esc_html( $state_config['action'] ); ?></td>
 						<td><?php echo esc_html( $state_config['outcome'] ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+
+		<h2 style="margin-top: 2rem;"><?php esc_html_e( 'Approved Migration Team', 'migration-freeze-webspark' ); ?></h2>
+		<p><?php esc_html_e( 'Approved migration team members are visible below for operational reference.', 'migration-freeze-webspark' ); ?></p>
+
+		<table class="widefat striped" style="max-width: 600px;">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Username', 'migration-freeze-webspark' ); ?></th>
+					<th><?php esc_html_e( 'Email', 'migration-freeze-webspark' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $team as $assistant ) : ?>
+					<tr>
+						<td><?php echo esc_html( $assistant['username'] ); ?></td>
+						<td><?php echo esc_html( $assistant['email'] ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
