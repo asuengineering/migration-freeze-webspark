@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:     Migration Freeze WebSparK
+ * Plugin Name:     Pitchfork - Migration Freeze
  * Plugin URI:      https://github.com/asuengineering/migration-freeze-webspark
  * Description:     Manage access freezes, decommission notices, and approved admin access for multisite sites.
  * Author:          Steve Ryan
