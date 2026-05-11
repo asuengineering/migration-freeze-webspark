@@ -68,11 +68,10 @@ function mfw_handle_state_update() {
 }
 
 function mfw_render_settings_page() {
-	$state        = mfw_get_site_state();
-	$states       = mfw_get_site_states();
-	$report       = get_transient( mfw_get_state_report_key() );
-	$team         = mfw_get_migration_assistant_directory();
-	$current_name = isset( $states[ $state ]['label'] ) ? $states[ $state ]['label'] : '';
+	$state  = mfw_get_site_state();
+	$states = mfw_get_site_states();
+	$report = get_transient( mfw_get_state_report_key() );
+	$team   = mfw_get_migration_assistant_directory();
 
 	if ( $report ) {
 		delete_transient( mfw_get_state_report_key() );
@@ -80,7 +79,6 @@ function mfw_render_settings_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Pitchfork Migration', 'migration-freeze-webspark' ); ?></h1>
-		<p><?php esc_html_e( 'Use this page to review the current state of the site and the state transition outcomes.', 'migration-freeze-webspark' ); ?></p>
 
 		<?php if ( isset( $_GET['mfw_updated'] ) ) : ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Site state updated.', 'migration-freeze-webspark' ); ?></p></div>
@@ -107,10 +105,6 @@ function mfw_render_settings_page() {
 			</div>
 		<?php endif; ?>
 
-		<h2><?php esc_html_e( 'Current State', 'migration-freeze-webspark' ); ?></h2>
-		<p><strong><?php echo esc_html( $current_name ); ?></strong></p>
-		<p><em><?php esc_html_e( 'Safety note: the currently logged-in administrator running this action will not be demoted or removed automatically.', 'migration-freeze-webspark' ); ?></em></p>
-
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'mfw_update_site_state', 'mfw_state_nonce' ); ?>
 			<input type="hidden" name="action" value="mfw_update_site_state" />
@@ -130,7 +124,9 @@ function mfw_render_settings_page() {
 			<?php submit_button( __( 'Update Site State', 'migration-freeze-webspark' ) ); ?>
 		</form>
 
-		<table class="widefat striped" style="max-width: 900px; margin-top: 2rem;">
+		<p style="margin-top:1rem;"><em><?php esc_html_e( 'The currently logged-in administrator running this action will not be demoted or removed automatically.', 'migration-freeze-webspark' ); ?></em></p>
+
+		<table class="widefat striped" style="max-width: 900px; margin-top: 1rem;">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'State', 'migration-freeze-webspark' ); ?></th>
