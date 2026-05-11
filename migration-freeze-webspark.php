@@ -38,8 +38,29 @@ if ( ! defined( 'MFW_PLUGIN_BASENAME' ) ) {
 	define( 'MFW_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 }
 
+if ( ! defined( 'MFW_OPTION_SITE_STATE' ) ) {
+	define( 'MFW_OPTION_SITE_STATE', 'mfw_site_state' );
+}
+
+if ( ! defined( 'MFW_STATE_PENDING' ) ) {
+	define( 'MFW_STATE_PENDING', 'pending' );
+}
+
+if ( ! defined( 'MFW_STATE_FROZEN' ) ) {
+	define( 'MFW_STATE_FROZEN', 'frozen' );
+}
+
+if ( ! defined( 'MFW_STATE_COMPLETE' ) ) {
+	define( 'MFW_STATE_COMPLETE', 'complete' );
+}
+
+require_once MFW_PLUGIN_PATH . 'inc/helpers.php';
+require_once MFW_PLUGIN_PATH . 'inc/site-state.php';
+require_once MFW_PLUGIN_PATH . 'inc/admin-notices.php';
+require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
+
 /**
- * Load translations and any required plugin modules.
+ * Load translations.
  */
 function mfw_bootstrap() {
 	load_plugin_textdomain( 'migration-freeze-webspark', false, dirname( MFW_PLUGIN_BASENAME ) . '/languages' );
@@ -50,7 +71,9 @@ add_action( 'plugins_loaded', 'mfw_bootstrap' );
  * Plugin activation hook.
  */
 function mfw_activate_plugin() {
-	// Activation tasks will be added here.
+	if ( false === get_option( MFW_OPTION_SITE_STATE, false ) ) {
+		add_option( MFW_OPTION_SITE_STATE, MFW_STATE_PENDING );
+	}
 }
 register_activation_hook( __FILE__, 'mfw_activate_plugin' );
 
@@ -58,6 +81,6 @@ register_activation_hook( __FILE__, 'mfw_activate_plugin' );
  * Plugin deactivation hook.
  */
 function mfw_deactivate_plugin() {
-	// Deactivation tasks will be added here.
+	// Placeholder.
 }
 register_deactivation_hook( __FILE__, 'mfw_deactivate_plugin' );
