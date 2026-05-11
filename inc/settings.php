@@ -9,9 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Register the Pitchfork Migration settings page.
- */
 function mfw_register_settings_page() {
 	add_options_page(
 		__( 'Pitchfork Migration', 'migration-freeze-webspark' ),
@@ -23,26 +20,15 @@ function mfw_register_settings_page() {
 }
 add_action( 'admin_menu', 'mfw_register_settings_page' );
 
-/**
- * Register the settings form handler.
- */
 function mfw_register_state_update_handler() {
 	add_action( 'admin_post_mfw_update_site_state', 'mfw_handle_state_update' );
 }
 add_action( 'admin_init', 'mfw_register_state_update_handler' );
 
-/**
- * Build a transient key for storing the latest action report.
- *
- * @return string
- */
 function mfw_get_state_report_key() {
 	return 'mfw_state_report_' . get_current_user_id();
 }
 
-/**
- * Handle a state update submission.
- */
 function mfw_handle_state_update() {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html__( 'You do not have permission to update this site.', 'migration-freeze-webspark' ) );
@@ -81,13 +67,9 @@ function mfw_handle_state_update() {
 	exit;
 }
 
-/**
- * Render the settings page.
- */
 function mfw_render_settings_page() {
 	$state        = mfw_get_site_state();
 	$states       = mfw_get_site_states();
-	$assistants   = mfw_get_migration_assistant_directory();
 	$current_name = isset( $states[ $state ]['label'] ) ? $states[ $state ]['label'] : '';
 	$report       = get_transient( mfw_get_state_report_key() );
 
@@ -97,7 +79,7 @@ function mfw_render_settings_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Pitchfork Migration', 'migration-freeze-webspark' ); ?></h1>
-		<p><?php esc_html_e( 'Use this page to review the current state of the site and the approved migration team list.', 'migration-freeze-webspark' ); ?></p>
+		<p><?php esc_html_e( 'Use this page to review the current state of the site and the state transition outcomes.', 'migration-freeze-webspark' ); ?></p>
 
 		<?php if ( isset( $_GET['mfw_updated'] ) ) : ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Site state updated.', 'migration-freeze-webspark' ); ?></p></div>
@@ -151,36 +133,16 @@ function mfw_render_settings_page() {
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'State', 'migration-freeze-webspark' ); ?></th>
-					<th><?php esc_html_e( 'Description', 'migration-freeze-webspark' ); ?></th>
 					<th><?php esc_html_e( 'Action', 'migration-freeze-webspark' ); ?></th>
+					<th><?php esc_html_e( 'Outcome', 'migration-freeze-webspark' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach ( $states as $state_key => $state_config ) : ?>
 					<tr <?php echo $state === $state_key ? 'class="active-row"' : ''; ?>>
 						<td><strong><?php echo esc_html( $state_config['label'] ); ?></strong></td>
-						<td><?php echo esc_html( $state_config['message'] ); ?></td>
 						<td><?php echo esc_html( $state_config['action'] ); ?></td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-
-		<h2 style="margin-top: 2rem;"><?php esc_html_e( 'Approved Migration Team', 'migration-freeze-webspark' ); ?></h2>
-		<p><?php echo esc_html( mfw_get_migration_assistant_summary() ); ?></p>
-
-		<table class="widefat striped" style="max-width: 600px;">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Username', 'migration-freeze-webspark' ); ?></th>
-					<th><?php esc_html_e( 'Email', 'migration-freeze-webspark' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ( $assistants as $assistant ) : ?>
-					<tr>
-						<td><?php echo esc_html( $assistant['username'] ); ?></td>
-						<td><?php echo esc_html( $assistant['email'] ); ?></td>
+						<td><?php echo esc_html( $state_config['outcome'] ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
