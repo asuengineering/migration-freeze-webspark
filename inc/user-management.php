@@ -62,9 +62,9 @@ function mfw_ensure_migration_team_users_exist() {
 			continue;
 		}
 
-		$email           = $username . '@asu.edu';
-		$random_password  = wp_generate_password( 32, true, true );
-		$user_id         = wp_create_user( $username, $random_password, $email );
+		$email          = $username . '@asu.edu';
+		$random_password = wp_generate_password( 32, true, true );
+		$user_id        = wp_create_user( $username, $random_password, $email );
 
 		if ( ! is_wp_error( $user_id ) ) {
 			$created[] = $username;
@@ -88,12 +88,14 @@ function mfw_apply_state_changes( $state = null ) {
 		case MFW_STATE_ACTIVE:
 			return mfw_apply_active_state();
 
+		case MFW_STATE_UAT_COMPLETE:
+			return mfw_apply_uat_complete_state();
+
 		case MFW_STATE_DECOMMISSIONED:
 			return mfw_apply_decommissioned_state();
 
 		case MFW_STATE_PENDING:
 		case MFW_STATE_COMPLETE:
-		case MFW_STATE_UAT_COMPLETE:
 		default:
 			return array(
 				'state'         => $state,
@@ -109,19 +111,69 @@ function mfw_apply_state_changes( $state = null ) {
 }
 
 /**
+ * Apply a site role to a user in a multisite-safe way.
+ *
+ * @param WP_User $user User object.
+ * @param string  $role Role name.
+ *
+ * @return void
+ */
+function mfw_assign_user_role( $user, $role ) {
+	if ( ! ( $user instanceof WP_User ) ) {
+		return;
+	}
+
+	$blog_id = get_current_blog_id();
+
+	if ( mfw_is_multisite_context() && function_exists( 'add_user_to_blog' ) ) {
+		add_user_to_blog( $blog_id, $user->ID, $role );
+		return;
+	}
+
+	$user_obj = new WP_User( $user->ID );
+	$user_obj->set_role( $role );
+}
+
+/**
+ * Remove all site role assignments from a user.
+ *
+ * @param WP_User $user User object.
+ *
+ * @return bool
+ */
+function mfw_remove_user_site_roles( $user ) {
+	if ( ! ( $user instanceof WP_User ) ) {
+		return false;
+	}
+
+	$blog_id = get_current_blog_id();
+
+	if ( mfw_is_multisite_context() && function_exists( 'remove_user_from_blog' ) ) {
+		return (bool) remove_user_from_blog( $user->ID, $blog_id );
+	}
+
+	// Single-site fallback: clear the site's capability map so the user has no role assigned.
+	global $wpdb;
+
+	$cap_key = $wpdb->get_blog_prefix( $blog_id ) . 'capabilities';
+	update_user_meta( $user->ID, $cap_key, array() );
+	clean_user_cache( $user->ID );
+
+	return true;
+}
+
+/**
  * Promote the migration team and demote everyone else to subscriber.
  *
  * @return array<string, mixed>
  */
 function mfw_apply_active_state() {
-	$blog_id      = get_current_blog_id();
-	$current_user  = get_current_user_id();
-	$created       = mfw_ensure_migration_team_users_exist();
-	$promoted      = array();
-	$demoted       = array();
-	$missing       = array();
-	$team_lookup   = array_flip( mfw_get_migration_assistants() );
-	$is_multisite  = mfw_is_multisite_context();
+	$current_user = get_current_user_id();
+	$created      = mfw_ensure_migration_team_users_exist();
+	$promoted     = array();
+	$demoted      = array();
+	$missing      = array();
+	$team_lookup  = array_flip( mfw_get_migration_assistants() );
 
 	foreach ( mfw_get_migration_assistants() as $username ) {
 		$user = get_user_by( 'login', $username );
@@ -131,13 +183,7 @@ function mfw_apply_active_state() {
 			continue;
 		}
 
-		if ( $is_multisite && function_exists( 'add_user_to_blog' ) ) {
-			add_user_to_blog( $blog_id, $user->ID, 'administrator' );
-		} else {
-			$user_obj = new WP_User( $user->ID );
-			$user_obj->set_role( 'administrator' );
-		}
-
+		mfw_assign_user_role( $user, 'administrator' );
 		$promoted[] = $username;
 	}
 
@@ -176,36 +222,72 @@ function mfw_apply_active_state() {
 }
 
 /**
+ * Remove the migration team from the current site while leaving other users in place.
+ *
+ * @return array<string, mixed>
+ */
+function mfw_apply_uat_complete_state() {
+	$current_user = get_current_user_id();
+	$removed      = array();
+
+	foreach ( mfw_get_migration_assistants() as $username ) {
+		$user = get_user_by( 'login', $username );
+
+		if ( ! ( $user instanceof WP_User ) ) {
+			continue;
+		}
+
+		if ( (int) $user->ID === (int) $current_user ) {
+			continue;
+		}
+
+		if ( mfw_remove_user_site_roles( $user ) ) {
+			$removed[] = $username;
+		}
+	}
+
+	return array(
+		'state'        => MFW_STATE_UAT_COMPLETE,
+		'changes_made' => true,
+		'created'      => array(),
+		'promoted'     => array(),
+		'demoted'      => array(),
+		'removed'      => $removed,
+		'missing'      => array(),
+		'message'      => __( 'Migration team members were removed from the site.', 'migration-freeze-webspark' ),
+	);
+}
+
+/**
  * Remove all users from the current site.
  *
  * @return array<string, mixed>
  */
 function mfw_apply_decommissioned_state() {
-	$blog_id      = get_current_blog_id();
-	$current_user  = get_current_user_id();
+	$current_user = get_current_user_id();
 	$removed      = array();
-
-	if ( ! mfw_is_multisite_context() || ! function_exists( 'remove_user_from_blog' ) ) {
-		return array(
-			'state'        => MFW_STATE_DECOMMISSIONED,
-			'changes_made' => false,
-			'created'      => array(),
-			'promoted'     => array(),
-			'demoted'      => array(),
-			'removed'      => array(),
-			'missing'      => array(),
-			'message'      => __( 'Decommissioning is skipped on single-site installs. This action is only available on multisite.', 'migration-freeze-webspark' ),
-		);
-	}
 
 	foreach ( mfw_get_site_users() as $user ) {
 		if ( (int) $user->ID === (int) $current_user ) {
 			continue;
 		}
 
-		if ( remove_user_from_blog( $user->ID, $blog_id ) ) {
+		if ( mfw_remove_user_site_roles( $user ) ) {
 			$removed[] = mfw_normalize_username( $user->user_login );
 		}
+	}
+
+	if ( ! mfw_is_multisite_context() ) {
+		return array(
+			'state'        => MFW_STATE_DECOMMISSIONED,
+			'changes_made' => true,
+			'created'      => array(),
+			'promoted'     => array(),
+			'demoted'      => array(),
+			'removed'      => $removed,
+			'missing'      => array(),
+			'message'      => __( 'All other users were stripped of the current site role on this single-site install.', 'migration-freeze-webspark' ),
+		);
 	}
 
 	return array(
@@ -216,6 +298,6 @@ function mfw_apply_decommissioned_state() {
 		'demoted'      => array(),
 		'removed'      => $removed,
 		'missing'      => array(),
-		'message'      => __( 'All site users except the current administrator were removed from the site.', 'migration-freeze-webspark' ),
+		'message'      => __( 'All site role assignments except the current operator were removed from the site.', 'migration-freeze-webspark' ),
 	);
 }

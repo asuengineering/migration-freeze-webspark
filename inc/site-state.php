@@ -23,8 +23,8 @@ function mfw_get_site_states() {
 		),
 		MFW_STATE_ACTIVE => array(
 			'label'   => 'Migration Active',
-			'message' => 'Migration is in progress. Approved migration assistants remain site admins and all other site users are demoted to subscriber.',
-			'action'  => 'Promote approved assistants; demote non-exempt users to subscriber.',
+			'message' => 'Migration is in progress. Approved migration team members remain site admins and all other site users are demoted to subscriber.',
+			'action'  => 'Promote the migration team; demote non-team users to subscriber.',
 		),
 		MFW_STATE_COMPLETE => array(
 			'label'   => 'Migration Complete',
@@ -33,13 +33,13 @@ function mfw_get_site_states() {
 		),
 		MFW_STATE_UAT_COMPLETE => array(
 			'label'   => 'UAT Complete',
-			'message' => 'User acceptance testing is complete. Migration assistants can now be removed from the site if needed.',
-			'action'  => 'Leave users unchanged unless you choose to clean up assistants.',
+			'message' => 'User acceptance testing is complete. The migration team can now be removed from the site before final cleanup.',
+			'action'  => 'Remove the migration team from this site; leave everyone else in place for the final cleanup step.',
 		),
 		MFW_STATE_DECOMMISSIONED => array(
 			'label'   => 'Decommissioned',
-			'message' => 'This site is scheduled for removal. All site users will be removed during decommission handling.',
-			'action'  => 'Remove all users from the site.',
+			'message' => 'This site is scheduled for removal. Site access will be reduced to no role assignment for everyone except the current operator.',
+			'action'  => 'Remove site role assignments for all users except the current operator.',
 		),
 	);
 }
