@@ -39,6 +39,15 @@ function mfw_user_is_migration_team_member( $user ) {
 }
 
 /**
+ * Determine whether the current install is multisite.
+ *
+ * @return bool
+ */
+function mfw_is_multisite_context() {
+	return is_multisite();
+}
+
+/**
  * Create missing migration team users if needed.
  *
  * @return array<int, string>
@@ -53,10 +62,9 @@ function mfw_ensure_migration_team_users_exist() {
 			continue;
 		}
 
-		$email = $username . '@asu.edu';
-		$random_password = wp_generate_password( 32, true, true );
-
-		$user_id = wp_create_user( $username, $random_password, $email );
+		$email           = $username . '@asu.edu';
+		$random_password  = wp_generate_password( 32, true, true );
+		$user_id         = wp_create_user( $username, $random_password, $email );
 
 		if ( ! is_wp_error( $user_id ) ) {
 			$created[] = $username;
@@ -106,23 +114,31 @@ function mfw_apply_state_changes( $state = null ) {
  * @return array<string, mixed>
  */
 function mfw_apply_active_state() {
-	$blog_id        = get_current_blog_id();
-	$current_user   = get_current_user_id();
-	$created        = mfw_ensure_migration_team_users_exist();
-	$promoted       = array();
-	$demoted        = array();
-	$missing        = array();
-	$team_lookup    = array_flip( mfw_get_migration_assistants() );
+	$blog_id      = get_current_blog_id();
+	$current_user  = get_current_user_id();
+	$created       = mfw_ensure_migration_team_users_exist();
+	$promoted      = array();
+	$demoted       = array();
+	$missing       = array();
+	$team_lookup   = array_flip( mfw_get_migration_assistants() );
+	$is_multisite  = mfw_is_multisite_context();
 
 	foreach ( mfw_get_migration_assistants() as $username ) {
 		$user = get_user_by( 'login', $username );
 
-		if ( $user instanceof WP_User ) {
-			add_user_to_blog( $blog_id, $user->ID, 'administrator' );
-			$promoted[] = $username;
-		} else {
+		if ( ! ( $user instanceof WP_User ) ) {
 			$missing[] = $username;
+			continue;
 		}
+
+		if ( $is_multisite && function_exists( 'add_user_to_blog' ) ) {
+			add_user_to_blog( $blog_id, $user->ID, 'administrator' );
+		} else {
+			$user_obj = new WP_User( $user->ID );
+			$user_obj->set_role( 'administrator' );
+		}
+
+		$promoted[] = $username;
 	}
 
 	foreach ( mfw_get_site_users() as $user ) {
@@ -166,8 +182,21 @@ function mfw_apply_active_state() {
  */
 function mfw_apply_decommissioned_state() {
 	$blog_id      = get_current_blog_id();
-	$current_user = get_current_user_id();
+	$current_user  = get_current_user_id();
 	$removed      = array();
+
+	if ( ! mfw_is_multisite_context() || ! function_exists( 'remove_user_from_blog' ) ) {
+		return array(
+			'state'        => MFW_STATE_DECOMMISSIONED,
+			'changes_made' => false,
+			'created'      => array(),
+			'promoted'     => array(),
+			'demoted'      => array(),
+			'removed'      => array(),
+			'missing'      => array(),
+			'message'      => __( 'Decommissioning is skipped on single-site installs. This action is only available on multisite.', 'migration-freeze-webspark' ),
+		);
+	}
 
 	foreach ( mfw_get_site_users() as $user ) {
 		if ( (int) $user->ID === (int) $current_user ) {
