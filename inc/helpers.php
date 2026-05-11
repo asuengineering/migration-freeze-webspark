@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Return the approved migration assistant usernames.
+ * Return the approved migration team usernames.
  *
  * Usernames are derived from the prefix of each ASU email address.
  *
@@ -31,7 +31,7 @@ function mfw_get_migration_assistants() {
 }
 
 /**
- * Return the approved migration assistant list with email addresses.
+ * Return the approved migration team list with email addresses.
  *
  * @return array<int, array{username:string,email:string}>
  */
@@ -49,7 +49,7 @@ function mfw_get_migration_assistant_directory() {
 }
 
 /**
- * Return a formatted migration assistant display list.
+ * Return a formatted migration team display list.
  *
  * @return string
  */
@@ -64,7 +64,7 @@ function mfw_get_migration_assistant_summary() {
 }
 
 /**
- * Normalize a username to the migration assistant format.
+ * Normalize a username to the migration team format.
  *
  * @param string $username Username or email.
  *

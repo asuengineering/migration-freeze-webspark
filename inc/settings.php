@@ -13,14 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the Pitchfork Migration settings page.
  */
 function mfw_register_settings_page() {
-	add_menu_page(
+	add_options_page(
 		__( 'Pitchfork Migration', 'migration-freeze-webspark' ),
 		__( 'Pitchfork Migration', 'migration-freeze-webspark' ),
 		'manage_options',
 		'mfw-pitchfork-migration',
-		'mfw_render_settings_page',
-		'dashicons-shield',
-		58
+		'mfw_render_settings_page'
 	);
 }
 add_action( 'admin_menu', 'mfw_register_settings_page' );
@@ -36,7 +34,7 @@ function mfw_render_settings_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Pitchfork Migration', 'migration-freeze-webspark' ); ?></h1>
-		<p><?php esc_html_e( 'Use this page to review the current state of the site and the approved migration assistant list.', 'migration-freeze-webspark' ); ?></p>
+		<p><?php esc_html_e( 'Use this page to review the current state of the site and the approved migration team list.', 'migration-freeze-webspark' ); ?></p>
 
 		<h2><?php esc_html_e( 'Current State', 'migration-freeze-webspark' ); ?></h2>
 		<p><strong><?php echo esc_html( $current_name ); ?></strong></p>
@@ -60,7 +58,7 @@ function mfw_render_settings_page() {
 			</tbody>
 		</table>
 
-		<h2 style="margin-top: 2rem;"><?php esc_html_e( 'Approved Migration Assistants', 'migration-freeze-webspark' ); ?></h2>
+		<h2 style="margin-top: 2rem;"><?php esc_html_e( 'Approved Migration Team', 'migration-freeze-webspark' ); ?></h2>
 		<p><?php echo esc_html( mfw_get_migration_assistant_summary() ); ?></p>
 
 		<table class="widefat striped" style="max-width: 600px;">
