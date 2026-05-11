@@ -4,7 +4,7 @@
  * Plugin URI:      https://github.com/asuengineering/migration-freeze-webspark
  * Description:     Manage access freezes, decommission notices, and approved admin access for multisite sites.
  * Author:          Steve Ryan
- * Author URI:      https://sryan.us
+ * Author URI:      https://comm.engineering.asu.edu
  * Text Domain:     migration-freeze-webspark
  * Domain Path:     /languages
  * Version:         0.1.0
