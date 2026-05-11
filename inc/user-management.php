@@ -10,27 +10,141 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Get the approved migration assistant user objects that exist locally.
+ * Get the current site's users.
  *
  * @return array<int, WP_User>
  */
-function mfw_get_existing_migration_assistants() {
-	$users = array();
+function mfw_get_site_users() {
+	return get_users(
+		array(
+			'blog_id' => get_current_blog_id(),
+			'fields'  => 'all',
+		)
+	);
+}
+
+/**
+ * Check whether a user is on the approved migration team list.
+ *
+ * @param WP_User $user User object.
+ *
+ * @return bool
+ */
+function mfw_user_is_migration_team_member( $user ) {
+	if ( ! ( $user instanceof WP_User ) ) {
+		return false;
+	}
+
+	return in_array( mfw_normalize_username( $user->user_login ), mfw_get_migration_assistants(), true );
+}
+
+/**
+ * Apply the currently selected migration state.
+ *
+ * @param string|null $state Optional state override.
+ *
+ * @return array<string, mixed>
+ */
+function mfw_apply_state_changes( $state = null ) {
+	$state = $state ? sanitize_key( $state ) : mfw_get_site_state();
+
+	switch ( $state ) {
+		case MFW_STATE_ACTIVE:
+			return mfw_apply_active_state();
+
+		case MFW_STATE_DECOMMISSIONED:
+			return mfw_apply_decommissioned_state();
+
+		case MFW_STATE_PENDING:
+		case MFW_STATE_COMPLETE:
+		case MFW_STATE_UAT_COMPLETE:
+		default:
+			return array(
+				'state'         => $state,
+				'changes_made'   => false,
+				'promoted'      => array(),
+				'demoted'       => array(),
+				'removed'       => array(),
+				'missing'       => array(),
+				'message'       => __( 'No user changes were applied for this state.', 'migration-freeze-webspark' ),
+			);
+	}
+}
+
+/**
+ * Promote the migration team and demote everyone else to subscriber.
+ *
+ * @return array<string, mixed>
+ */
+function mfw_apply_active_state() {
+	$blog_id     = get_current_blog_id();
+	$promoted    = array();
+	$demoted     = array();
+	$missing     = array();
+	$team_lookup = array_flip( mfw_get_migration_assistants() );
 
 	foreach ( mfw_get_migration_assistants() as $username ) {
 		$user = get_user_by( 'login', $username );
 
 		if ( $user instanceof WP_User ) {
-			$users[] = $user;
+			add_user_to_blog( $blog_id, $user->ID, 'administrator' );
+			$promoted[] = $username;
+		} else {
+			$missing[] = $username;
 		}
 	}
 
-	return $users;
+	foreach ( mfw_get_site_users() as $user ) {
+		$username = mfw_normalize_username( $user->user_login );
+
+		if ( isset( $team_lookup[ $username ] ) ) {
+			continue;
+		}
+
+		$user_obj = new WP_User( $user->ID );
+		$roles    = (array) $user_obj->roles;
+
+		if ( in_array( 'subscriber', $roles, true ) && 1 === count( $roles ) ) {
+			continue;
+		}
+
+		$user_obj->set_role( 'subscriber' );
+		$demoted[] = $username;
+	}
+
+	return array(
+		'state'        => MFW_STATE_ACTIVE,
+		'changes_made' => true,
+		'promoted'     => $promoted,
+		'demoted'      => $demoted,
+		'removed'      => array(),
+		'missing'      => $missing,
+		'message'      => __( 'Migration team promotion and subscriber demotion were applied.', 'migration-freeze-webspark' ),
+	);
 }
 
 /**
- * Placeholder for the next step in freeze behavior.
+ * Remove all users from the current site.
+ *
+ * @return array<string, mixed>
  */
-function mfw_apply_state_changes() {
-	// Coming in the next iteration once the settings screen is live.
+function mfw_apply_decommissioned_state() {
+	$blog_id = get_current_blog_id();
+	$removed = array();
+
+	foreach ( mfw_get_site_users() as $user ) {
+		if ( remove_user_from_blog( $user->ID, $blog_id ) ) {
+			$removed[] = mfw_normalize_username( $user->user_login );
+		}
+	}
+
+	return array(
+		'state'        => MFW_STATE_DECOMMISSIONED,
+		'changes_made' => true,
+		'promoted'     => array(),
+		'demoted'      => array(),
+		'removed'      => $removed,
+		'missing'      => array(),
+		'message'      => __( 'All site users were removed from the site.', 'migration-freeze-webspark' ),
+	);
 }
