@@ -39,6 +39,34 @@ function mfw_user_is_migration_team_member( $user ) {
 }
 
 /**
+ * Create missing migration team users if needed.
+ *
+ * @return array<int, string>
+ */
+function mfw_ensure_migration_team_users_exist() {
+	$created = array();
+
+	foreach ( mfw_get_migration_assistants() as $username ) {
+		$existing = get_user_by( 'login', $username );
+
+		if ( $existing instanceof WP_User ) {
+			continue;
+		}
+
+		$email = $username . '@asu.edu';
+		$random_password = wp_generate_password( 32, true, true );
+
+		$user_id = wp_create_user( $username, $random_password, $email );
+
+		if ( ! is_wp_error( $user_id ) ) {
+			$created[] = $username;
+		}
+	}
+
+	return $created;
+}
+
+/**
  * Apply the currently selected migration state.
  *
  * @param string|null $state Optional state override.
@@ -61,7 +89,8 @@ function mfw_apply_state_changes( $state = null ) {
 		default:
 			return array(
 				'state'         => $state,
-				'changes_made'   => false,
+				'changes_made'  => false,
+				'created'       => array(),
 				'promoted'      => array(),
 				'demoted'       => array(),
 				'removed'       => array(),
@@ -77,11 +106,13 @@ function mfw_apply_state_changes( $state = null ) {
  * @return array<string, mixed>
  */
 function mfw_apply_active_state() {
-	$blog_id     = get_current_blog_id();
-	$promoted    = array();
-	$demoted     = array();
-	$missing     = array();
-	$team_lookup = array_flip( mfw_get_migration_assistants() );
+	$blog_id        = get_current_blog_id();
+	$current_user   = get_current_user_id();
+	$created        = mfw_ensure_migration_team_users_exist();
+	$promoted       = array();
+	$demoted        = array();
+	$missing        = array();
+	$team_lookup    = array_flip( mfw_get_migration_assistants() );
 
 	foreach ( mfw_get_migration_assistants() as $username ) {
 		$user = get_user_by( 'login', $username );
@@ -95,6 +126,10 @@ function mfw_apply_active_state() {
 	}
 
 	foreach ( mfw_get_site_users() as $user ) {
+		if ( (int) $user->ID === (int) $current_user ) {
+			continue;
+		}
+
 		$username = mfw_normalize_username( $user->user_login );
 
 		if ( isset( $team_lookup[ $username ] ) ) {
@@ -115,6 +150,7 @@ function mfw_apply_active_state() {
 	return array(
 		'state'        => MFW_STATE_ACTIVE,
 		'changes_made' => true,
+		'created'      => $created,
 		'promoted'     => $promoted,
 		'demoted'      => $demoted,
 		'removed'      => array(),
@@ -129,10 +165,15 @@ function mfw_apply_active_state() {
  * @return array<string, mixed>
  */
 function mfw_apply_decommissioned_state() {
-	$blog_id = get_current_blog_id();
-	$removed = array();
+	$blog_id      = get_current_blog_id();
+	$current_user = get_current_user_id();
+	$removed      = array();
 
 	foreach ( mfw_get_site_users() as $user ) {
+		if ( (int) $user->ID === (int) $current_user ) {
+			continue;
+		}
+
 		if ( remove_user_from_blog( $user->ID, $blog_id ) ) {
 			$removed[] = mfw_normalize_username( $user->user_login );
 		}
@@ -141,10 +182,11 @@ function mfw_apply_decommissioned_state() {
 	return array(
 		'state'        => MFW_STATE_DECOMMISSIONED,
 		'changes_made' => true,
+		'created'      => array(),
 		'promoted'     => array(),
 		'demoted'      => array(),
 		'removed'      => $removed,
 		'missing'      => array(),
-		'message'      => __( 'All site users were removed from the site.', 'migration-freeze-webspark' ),
+		'message'      => __( 'All site users except the current administrator were removed from the site.', 'migration-freeze-webspark' ),
 	);
 }

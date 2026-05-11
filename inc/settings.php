@@ -106,6 +106,9 @@ function mfw_render_settings_page() {
 		<?php if ( ! empty( $report ) ) : ?>
 			<div class="notice notice-info is-dismissible">
 				<p><strong><?php echo esc_html( $report['message'] ); ?></strong></p>
+				<?php if ( ! empty( $report['created'] ) ) : ?>
+					<p><?php echo esc_html( sprintf( __( 'Created: %s', 'migration-freeze-webspark' ), implode( ', ', $report['created'] ) ) ); ?></p>
+				<?php endif; ?>
 				<?php if ( ! empty( $report['promoted'] ) ) : ?>
 					<p><?php echo esc_html( sprintf( __( 'Promoted: %s', 'migration-freeze-webspark' ), implode( ', ', $report['promoted'] ) ) ); ?></p>
 				<?php endif; ?>
@@ -123,6 +126,7 @@ function mfw_render_settings_page() {
 
 		<h2><?php esc_html_e( 'Current State', 'migration-freeze-webspark' ); ?></h2>
 		<p><strong><?php echo esc_html( $current_name ); ?></strong></p>
+		<p><em><?php esc_html_e( 'Safety note: the currently logged-in administrator running this action will not be demoted or removed automatically.', 'migration-freeze-webspark' ); ?></em></p>
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'mfw_update_site_state', 'mfw_state_nonce' ); ?>
