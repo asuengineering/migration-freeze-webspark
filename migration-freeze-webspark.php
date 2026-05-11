@@ -2,12 +2,12 @@
 /**
  * Plugin Name:     Pitchfork - Migration Freeze
  * Plugin URI:      https://github.com/asuengineering/migration-freeze-webspark
- * Description:     Manage access freezes, decommission notices, and approved admin access for multisite sites.
+ * Description:     Manage migration states, approved admin access, and user freezes for multisite sites.
  * Author:          Steve Ryan
  * Author URI:      https://comm.engineering.asu.edu
  * Text Domain:     migration-freeze-webspark
  * Domain Path:     /languages
- * Version:         0.1.0
+ * Version:         0.2.0
  *
  * @package         migration_freeze_webspark
  *
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'MFW_VERSION' ) ) {
-	define( 'MFW_VERSION', '0.1.0' );
+	define( 'MFW_VERSION', '0.2.0' );
 }
 
 if ( ! defined( 'MFW_PLUGIN_FILE' ) ) {
@@ -46,18 +46,27 @@ if ( ! defined( 'MFW_STATE_PENDING' ) ) {
 	define( 'MFW_STATE_PENDING', 'pending' );
 }
 
-if ( ! defined( 'MFW_STATE_FROZEN' ) ) {
-	define( 'MFW_STATE_FROZEN', 'frozen' );
+if ( ! defined( 'MFW_STATE_ACTIVE' ) ) {
+	define( 'MFW_STATE_ACTIVE', 'active' );
 }
 
 if ( ! defined( 'MFW_STATE_COMPLETE' ) ) {
 	define( 'MFW_STATE_COMPLETE', 'complete' );
 }
 
+if ( ! defined( 'MFW_STATE_UAT_COMPLETE' ) ) {
+	define( 'MFW_STATE_UAT_COMPLETE', 'uat_complete' );
+}
+
+if ( ! defined( 'MFW_STATE_DECOMMISSIONED' ) ) {
+	define( 'MFW_STATE_DECOMMISSIONED', 'decommissioned' );
+}
+
 require_once MFW_PLUGIN_PATH . 'inc/helpers.php';
 require_once MFW_PLUGIN_PATH . 'inc/site-state.php';
 require_once MFW_PLUGIN_PATH . 'inc/admin-notices.php';
 require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
+require_once MFW_PLUGIN_PATH . 'inc/settings.php';
 
 /**
  * Load translations.
@@ -81,6 +90,6 @@ register_activation_hook( __FILE__, 'mfw_activate_plugin' );
  * Plugin deactivation hook.
  */
 function mfw_deactivate_plugin() {
-	// Placeholder.
+	// No-op for now.
 }
 register_deactivation_hook( __FILE__, 'mfw_deactivate_plugin' );

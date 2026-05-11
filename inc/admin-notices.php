@@ -17,34 +17,29 @@ function mfw_render_admin_notice() {
 		return;
 	}
 
-	$state  = mfw_get_site_state();
-	$states = mfw_get_site_states();
-
-	if ( empty( $states[ $state ] ) ) {
-		return;
-	}
-
-	$message = $states[ $state ]['message'];
-	$label   = $states[ $state ]['label'];
-
-	$class = 'notice-info';
+	$state_config = mfw_get_current_state_config();
+	$state        = mfw_get_site_state();
+	$class        = 'notice-info';
 
 	switch ( $state ) {
-		case MFW_STATE_FROZEN:
+		case MFW_STATE_ACTIVE:
 			$class = 'notice-warning';
 			break;
 
 		case MFW_STATE_COMPLETE:
+		case MFW_STATE_UAT_COMPLETE:
 			$class = 'notice-success';
+			break;
+
+		case MFW_STATE_DECOMMISSIONED:
+			$class = 'notice-error';
 			break;
 	}
 
 	?>
 	<div class="notice <?php echo esc_attr( $class ); ?>">
-		<p>
-			<strong><?php echo esc_html( $label ); ?>:</strong>
-			<?php echo esc_html( $message ); ?>
-		</p>
+		<p><strong><?php echo esc_html( $state_config['label'] ); ?>:</strong> <?php echo esc_html( $state_config['message'] ); ?></p>
+		<p><?php echo esc_html( $state_config['action'] ); ?></p>
 	</div>
 	<?php
 }
