@@ -42,6 +42,10 @@ if ( ! defined( 'MFW_OPTION_SITE_STATE' ) ) {
 	define( 'MFW_OPTION_SITE_STATE', 'mfw_site_state' );
 }
 
+if ( ! defined( 'MFW_STATE_NORMAL' ) ) {
+	define( 'MFW_STATE_NORMAL', 'normal' );
+}
+
 if ( ! defined( 'MFW_STATE_PENDING' ) ) {
 	define( 'MFW_STATE_PENDING', 'pending' );
 }
@@ -79,7 +83,7 @@ add_action( 'plugins_loaded', 'mfw_bootstrap' );
 
 function mfw_activate_plugin() {
 	if ( false === get_option( MFW_OPTION_SITE_STATE, false ) ) {
-		add_option( MFW_OPTION_SITE_STATE, MFW_STATE_PENDING );
+		add_option( MFW_OPTION_SITE_STATE, MFW_STATE_NORMAL );
 	}
 }
 register_activation_hook( __FILE__, 'mfw_activate_plugin' );

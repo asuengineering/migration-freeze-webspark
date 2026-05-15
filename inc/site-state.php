@@ -18,6 +18,13 @@ function mfw_get_site_states() {
 	$shared_cta = 'Further details can be found at https://comm.engineering.asu.edu/web-services/webspark/';
 
 	return array(
+		MFW_STATE_NORMAL => array(
+			'label'      => 'Situation Normal',
+			'message'    => '',
+			'notice_cta' => '',
+			'action'     => 'Leave the site unchanged and show no migration warning.',
+			'outcome'    => 'The plugin is active, but no migration activity is scheduled.',
+		),
 		MFW_STATE_PENDING => array(
 			'label'      => 'Migration Pending',
 			'message'    => 'ASU Engineering is migrating websites from WordPress to the university-supported Drupal platform, Webspark. Site owners and site operators should have received email communication regarding migration timelines, training opportunities, and support office hours.',
@@ -57,10 +64,10 @@ function mfw_get_site_states() {
 }
 
 function mfw_get_site_state() {
-	$state = get_option( MFW_OPTION_SITE_STATE, MFW_STATE_PENDING );
+	$state = get_option( MFW_OPTION_SITE_STATE, MFW_STATE_NORMAL );
 
 	if ( ! array_key_exists( $state, mfw_get_site_states() ) ) {
-		return MFW_STATE_PENDING;
+		return MFW_STATE_NORMAL;
 	}
 
 	return $state;

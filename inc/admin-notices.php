@@ -26,8 +26,13 @@ function mfw_render_state_notice( $context = 'admin' ) {
 		return;
 	}
 
+	$state = mfw_get_site_state();
+
+	if ( MFW_STATE_NORMAL === $state ) {
+		return;
+	}
+
 	$state_config = mfw_get_current_state_config();
-	$state        = mfw_get_site_state();
 	$class        = 'notice-info';
 	$style        = 'margin: 1rem 0; padding: 1rem 1.25rem; border-left: 4px solid #2271b1; background: #fff; max-width: 980px; line-height: 1.65;';
 
