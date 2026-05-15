@@ -10,13 +10,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Register the retained draft status.
+ * Register the retained status.
  */
 function mfw_register_retained_draft_status() {
 	register_post_status(
 		'draft-retain',
 		array(
-			'label'                     => _x( 'Draft Retain', 'post status', 'migration-freeze-webspark' ),
+			'label'                     => _x( 'Retained', 'post status', 'migration-freeze-webspark' ),
 			'public'                    => false,
 			'internal'                  => false,
 			'protected'                 => false,
@@ -26,8 +26,8 @@ function mfw_register_retained_draft_status() {
 			'show_in_admin_status_list' => true,
 			'exclude_from_search'       => true,
 			'label_count'               => _n_noop(
-				'Draft Retain <span class="count">(%s)</span>',
-				'Draft Retain <span class="count">(%s)</span>',
+				'Retained <span class="count">(%s)</span>',
+				'Retained <span class="count">(%s)</span>',
 				'migration-freeze-webspark'
 			),
 		)
