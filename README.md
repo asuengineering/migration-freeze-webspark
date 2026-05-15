@@ -23,7 +23,8 @@ The plugin supports the following lifecycle states:
 
 | State              | Behavior                                                                     |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Pending Migration  | No user changes                                                              |
+| Situation Normal   | Plugin is active with no migration warning or user changes                  |
+| Migration Pending  | No user changes                                                              |
 | Migration Active   | Migration team promoted to administrators; other users demoted to subscriber |
 | Migration Complete | No user changes                                                              |
 | UAT Complete       | Migration team removed from the site                                         |
@@ -65,7 +66,7 @@ The plugin also includes:
 Located at:
 
 ```text
-Settings → Pitchfork Migration
+Settings → Migration Status
 ```
 
 Provides:
@@ -74,6 +75,20 @@ Provides:
 - state transition controls,
 - migration-team visibility,
 - and transition summaries.
+
+## Migration Audit Trail
+
+Located at:
+
+```text
+Settings → Migration Audit Trail
+```
+
+Provides:
+
+- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, and users,
+- a history of recent exports,
+- and generated content-view summaries for audit planning.
 
 ## My Sites Labels
 
@@ -108,7 +123,7 @@ develop
 Current milestone:
 
 ```text
-v0.4.0
+v0.5.0
 ```
 
 ---

@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-05-15
+
+### Changed
+
+- Added a quiet default "Situation Normal" state so plugin activation no longer implies migration activity.
+- Renamed the settings page and menu label to "Migration Status".
+- Simplified the audit export workflow into separate artifacts for content, taxonomies, taxonomy relationships, media, menu items, and users.
+- Improved audit summary labels and generated-content counts for planning and QA.
+- Updated export filenames to include the site slug and timestamp.
+- Flattened the ZIP export structure.
+- Removed the retained draft feature and its related admin/UI references.
+
+### Added
+
+- Migration audit trail page under Settings.
+- Export history retention for recent audit runs.
+- Generated content-view summary metrics for audit planning.
+- Menu item export restoration after regression testing.
+
 ## [0.4.0] - 2026-05-11
 
 ### Changed
