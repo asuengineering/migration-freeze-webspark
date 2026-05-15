@@ -52,7 +52,7 @@ function mfw_render_audit_summary_ui_fixes() {
 		const tableTitle = 'Content views';
 		const labels = {
 			contentTotal: 'Content total',
-			published: 'Published / Private / Future / Pending / Retained',
+			published: 'Published / Private / Future / Pending',
 			draftTrash: 'Drafts + Trash',
 			termPages: 'Taxonomy term archive pages',
 			taxonomyLanding: 'Taxonomy landing pages',
@@ -93,7 +93,6 @@ function mfw_render_audit_summary_ui_fixes() {
 		} );
 
 		contentTotalRow.style.fontWeight = '700';
-		publishedRow.style.fontWeight = '';
 		draftTrashRow.style.color = '#b32d2e';
 
 		tbody.innerHTML = '';
