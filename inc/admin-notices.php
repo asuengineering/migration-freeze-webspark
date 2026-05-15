@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin and front-end notices.
+ * Admin notices.
  *
  * @package migration_freeze_webspark
  */
@@ -22,7 +22,7 @@ function mfw_noticeify_links( $text ) {
 }
 
 function mfw_render_state_notice( $context = 'admin' ) {
-	if ( ! mfw_should_render_state_notice() ) {
+	if ( ! mfw_should_render_state_notice() || 'admin' !== $context ) {
 		return;
 	}
 
@@ -67,9 +67,3 @@ function mfw_render_admin_notice() {
 	mfw_render_state_notice( 'admin' );
 }
 add_action( 'admin_notices', 'mfw_render_admin_notice' );
-
-function mfw_render_frontend_state_notice() {
-	mfw_render_state_notice( 'frontend' );
-}
-add_action( 'wp_body_open', 'mfw_render_frontend_state_notice' );
-add_action( 'wp_footer', 'mfw_render_frontend_state_notice' );
