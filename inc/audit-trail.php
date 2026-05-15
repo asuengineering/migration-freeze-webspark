@@ -95,31 +95,31 @@ function mfw_get_audit_artifacts() {
 	return array(
 		'content' => array(
 			'label'      => 'Content',
-			'record_type' => 'content',
 			'filename'    => 'content.csv',
 			'columns'     => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'status', 'title', 'url', 'slug', 'parent_id', 'created_at', 'modified_at', 'details_json' ),
 		),
 		'taxonomy_term' => array(
 			'label'      => 'Taxonomies',
-			'record_type' => 'taxonomy_term',
 			'filename'    => 'taxonomies.csv',
 			'columns'     => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'title', 'url', 'slug', 'parent_id', 'taxonomy', 'term_id', 'details_json' ),
 		),
 		'taxonomy_relationship' => array(
 			'label'      => 'Taxonomy Relationships',
-			'record_type' => 'taxonomy_relationship',
 			'filename'    => 'taxonomy-relationships.csv',
 			'columns'     => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'title', 'url', 'taxonomy', 'term_id', 'term_name', 'term_slug', 'related_object_id', 'related_object_type', 'details_json' ),
 		),
 		'media' => array(
 			'label'      => 'Media',
-			'record_type' => 'media',
 			'filename'    => 'media.csv',
 			'columns'     => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'title', 'url', 'media_id', 'filename', 'mime_type', 'caption', 'alt_text', 'details_json' ),
 		),
+		'menu_item' => array(
+			'label'      => 'Menu Items',
+			'filename'    => 'menu-items.csv',
+			'columns'     => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'title', 'url', 'parent_id', 'related_object_id', 'related_object_type', 'menu_name', 'menu_slug', 'menu_location', 'details_json' ),
+		),
 		'user' => array(
 			'label'      => 'Users',
-			'record_type' => 'user',
 			'filename'    => 'users.csv',
 			'columns'     => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'title', 'role', 'registered_at', 'details_json' ),
 		),
@@ -278,6 +278,33 @@ function mfw_audit_collect_media_rows( &$artifacts, &$metadata ) {
 	}
 }
 
+function mfw_audit_collect_menu_item_rows( &$artifacts, &$metadata ) {
+	$menus = wp_get_nav_menus();
+	if ( empty( $menus ) || is_wp_error( $menus ) ) {
+		return;
+	}
+	foreach ( $menus as $menu ) {
+		$menu_items = wp_get_nav_menu_items( $menu->term_id );
+		if ( empty( $menu_items ) || is_wp_error( $menu_items ) ) {
+			continue;
+		}
+		$locations = get_nav_menu_locations();
+		$menu_locations = array();
+		if ( is_array( $locations ) ) {
+			foreach ( $locations as $location => $assigned_menu_id ) {
+				if ( (int) $assigned_menu_id === (int) $menu->term_id ) {
+					$menu_locations[] = $location;
+				}
+			}
+		}
+		foreach ( $menu_items as $menu_item ) {
+			$related_object_id = isset( $menu_item->object_id ) ? (int) $menu_item->object_id : 0;
+			$related_object_type = isset( $menu_item->object ) ? $menu_item->object : '';
+			mfw_audit_push_row( $artifacts, 'menu_item', array( 'environment_name' => $metadata['environment_name'], 'site_id' => $metadata['site_id'], 'record_type' => 'menu_item', 'object_type' => 'menu_item', 'object_id' => $menu_item->ID, 'title' => $menu_item->title, 'url' => $menu_item->url, 'parent_id' => $menu_item->menu_item_parent, 'related_object_id' => $related_object_id, 'related_object_type' => $related_object_type, 'menu_name' => $menu->name, 'menu_slug' => $menu->slug, 'menu_location' => implode( ',', $menu_locations ), 'details_json' => array( 'menu_order' => $menu_item->menu_order, 'target' => $menu_item->target, 'xfn' => $menu_item->xfn, 'classes' => $menu_item->classes, 'description' => $menu_item->description ) ) );
+		}
+	}
+}
+
 function mfw_audit_collect_user_rows( &$artifacts, &$metadata ) {
 	$user_args = array( 'orderby' => 'ID', 'order' => 'ASC', 'fields' => 'all' );
 	if ( is_multisite() ) {
@@ -326,6 +353,7 @@ function mfw_build_audit_export_dataset() {
 	mfw_audit_collect_taxonomy_term_rows( $artifacts, $context );
 	mfw_audit_collect_taxonomy_relationship_rows( $artifacts, $context, $content_posts );
 	mfw_audit_collect_media_rows( $artifacts, $context );
+	mfw_audit_collect_menu_item_rows( $artifacts, $context );
 	mfw_audit_collect_user_rows( $artifacts, $context );
 
 	$row_counts = array();
@@ -540,7 +568,7 @@ function mfw_render_audit_trail_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Migration Audit Trail', 'migration-freeze-webspark' ); ?></h1>
-		<p><?php esc_html_e( 'Generate separate export artifacts for content, taxonomies, taxonomy relationships, media, and users.', 'migration-freeze-webspark' ); ?></p>
+		<p><?php esc_html_e( 'Generate separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, and users.', 'migration-freeze-webspark' ); ?></p>
 		<?php if ( ! empty( $notice ) ) : ?>
 			<div class="notice <?php echo esc_attr( 'error' === $notice['type'] ? 'notice-error' : 'notice-success' ); ?> is-dismissible"><p><?php echo esc_html( $notice['message'] ); ?></p></div>
 		<?php endif; ?>
