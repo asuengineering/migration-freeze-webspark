@@ -67,6 +67,7 @@ require_once MFW_PLUGIN_PATH . 'inc/site-state.php';
 require_once MFW_PLUGIN_PATH . 'inc/admin-notices.php';
 require_once MFW_PLUGIN_PATH . 'inc/my-sites.php';
 require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
+require_once MFW_PLUGIN_PATH . 'inc/post-statuses.php';
 require_once MFW_PLUGIN_PATH . 'inc/settings.php';
 require_once MFW_PLUGIN_PATH . 'inc/audit-trail.php';
 
