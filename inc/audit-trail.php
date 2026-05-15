@@ -68,17 +68,14 @@ function mfw_get_audit_notice() {
 function mfw_audit_is_plugin_active( $basename ) {
 	$active_plugins = (array) get_option( 'active_plugins', array() );
 	$sitewide       = (array) get_site_option( 'active_sitewide_plugins', array() );
-
 	if ( in_array( $basename, $active_plugins, true ) || isset( $sitewide[ $basename ] ) ) {
 		return true;
 	}
-
 	return function_exists( 'is_plugin_active' ) ? is_plugin_active( $basename ) : false;
 }
 
 function mfw_get_detected_audit_plugins() {
 	$plugins = array();
-
 	if ( mfw_audit_is_plugin_active( 'gravityforms/gravityforms.php' ) || class_exists( 'GFAPI' ) ) {
 		$plugins['gravity_forms'] = array( 'label' => 'Gravity Forms', 'purpose' => 'forms', 'file' => 'gravityforms/gravityforms.php' );
 	}
@@ -91,7 +88,6 @@ function mfw_get_detected_audit_plugins() {
 	if ( mfw_audit_is_plugin_active( 'redirection/redirection.php' ) || class_exists( 'Red_Item' ) ) {
 		$plugins['redirection'] = array( 'label' => 'Redirection', 'purpose' => 'redirects', 'file' => 'redirection/redirection.php' );
 	}
-
 	return $plugins;
 }
 
@@ -179,13 +175,13 @@ function mfw_audit_get_content_types( &$metadata ) {
 	return $types;
 }
 
-function mfw_audit_get_storage_paths( $export_id ) {
+function mfw_audit_get_storage_paths( $export_prefix ) {
 	$uploads = wp_upload_dir();
 	if ( ! empty( $uploads['error'] ) ) {
 		return new WP_Error( 'mfw_audit_uploads_error', $uploads['error'] );
 	}
-	$base_dir = trailingslashit( $uploads['basedir'] ) . 'mfw-audit-trail/site-' . get_current_blog_id() . '/' . sanitize_file_name( $export_id );
-	$base_url = trailingslashit( $uploads['baseurl'] ) . 'mfw-audit-trail/site-' . get_current_blog_id() . '/' . rawurlencode( sanitize_file_name( $export_id ) );
+	$base_dir = trailingslashit( $uploads['basedir'] ) . 'mfw-audit-trail/site-' . get_current_blog_id() . '/' . sanitize_file_name( $export_prefix );
+	$base_url = trailingslashit( $uploads['baseurl'] ) . 'mfw-audit-trail/site-' . get_current_blog_id() . '/' . rawurlencode( sanitize_file_name( $export_prefix ) );
 	if ( ! wp_mkdir_p( $base_dir ) ) {
 		return new WP_Error( 'mfw_audit_mkdir_error', __( 'Could not create the audit export directory.', 'migration-freeze-webspark' ) );
 	}
@@ -294,6 +290,34 @@ function mfw_audit_collect_user_rows( &$artifacts, &$metadata ) {
 	}
 }
 
+function mfw_audit_get_public_taxonomy_landing_count() {
+	$taxonomies = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
+	$count = 0;
+	foreach ( $taxonomies as $taxonomy => $object ) {
+		if ( ! mfw_audit_is_system_taxonomy( $taxonomy ) ) {
+			$count++;
+		}
+	}
+	return $count;
+}
+
+function mfw_audit_get_general_archive_count() {
+	$post_types = get_post_types( array( 'public' => true ), 'objects' );
+	$count = 0;
+	foreach ( $post_types as $post_type => $object ) {
+		if ( mfw_audit_is_system_post_type( $post_type ) ) {
+			continue;
+		}
+		if ( ! empty( $object->has_archive ) ) {
+			$count++;
+		}
+	}
+	if ( 'posts' === get_option( 'show_on_front' ) || get_option( 'page_for_posts' ) ) {
+		$count++;
+	}
+	return $count;
+}
+
 function mfw_build_audit_export_dataset() {
 	$context = mfw_audit_get_export_context();
 	$artifacts = array();
@@ -311,9 +335,46 @@ function mfw_build_audit_export_dataset() {
 	$context['row_counts'] = $row_counts;
 	$context['row_total'] = array_sum( $row_counts );
 
-	$metadata = array( 'environment_name' => $context['environment_name'], 'site_id' => $context['site_id'], 'site_name' => $context['site_name'], 'site_url' => $context['site_url'], 'generated_at' => $context['generated_at'], 'generated_at_gmt' => $context['generated_at_gmt'], 'generated_by' => $context['generated_by'], 'detected_plugins' => $context['detected_plugins'], 'detected_cpts' => $context['detected_cpts'], 'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(), 'row_total' => $context['row_total'], 'row_counts' => $row_counts, 'warnings' => $context['warnings'], 'files' => array() );
+	$content_rows = isset( $artifacts['content'] ) ? $artifacts['content'] : array();
+	$published_like = 0;
+	$draft_trash = 0;
+	foreach ( $content_rows as $row ) {
+		$status = isset( $row['status'] ) ? $row['status'] : '';
+		if ( in_array( $status, array( 'publish', 'private', 'future', 'pending', 'draft-retain' ), true ) ) {
+			$published_like++;
+		} elseif ( in_array( $status, array( 'draft', 'trash' ), true ) ) {
+			$draft_trash++;
+		}
+	}
 
-	return array( 'context' => $context, 'artifacts' => $artifacts, 'metadata' => $metadata );
+	$summary = array(
+		'published_like_content' => $published_like,
+		'draft_trash_content' => $draft_trash,
+		'all_content' => count( $content_rows ),
+		'taxonomy_term_pages' => isset( $row_counts['taxonomy_term'] ) ? (int) $row_counts['taxonomy_term'] : 0,
+		'taxonomy_landing_pages' => mfw_audit_get_public_taxonomy_landing_count(),
+		'general_archive_pages' => mfw_audit_get_general_archive_count(),
+	);
+
+	$metadata = array(
+		'environment_name' => $context['environment_name'],
+		'site_id' => $context['site_id'],
+		'site_name' => $context['site_name'],
+		'site_url' => $context['site_url'],
+		'generated_at' => $context['generated_at'],
+		'generated_at_gmt' => $context['generated_at_gmt'],
+		'generated_by' => $context['generated_by'],
+		'detected_plugins' => $context['detected_plugins'],
+		'detected_cpts' => $context['detected_cpts'],
+		'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(),
+		'row_total' => $context['row_total'],
+		'row_counts' => $row_counts,
+		'summary' => $summary,
+		'warnings' => $context['warnings'],
+		'files' => array(),
+	);
+
+	return array( 'context' => $context, 'artifacts' => $artifacts, 'metadata' => $metadata, 'summary' => $summary );
 }
 
 function mfw_write_audit_csv( $path, $rows, $columns ) {
@@ -360,13 +421,27 @@ function mfw_create_audit_zip( $zip_path, $files ) {
 	return file_exists( $zip_path );
 }
 
+function mfw_audit_get_site_slug() {
+	$site_name = get_bloginfo( 'name' );
+	if ( '' === trim( $site_name ) ) {
+		$host = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
+		$site_name = $host ? $host : 'site';
+	}
+	return sanitize_title( $site_name );
+}
+
+function mfw_audit_get_export_prefix() {
+	return mfw_audit_get_site_slug() . '-' . current_time( 'Y-m-d-His' );
+}
+
 function mfw_generate_audit_export_bundle() {
-	$export_id = 'audit-' . get_current_blog_id() . '-' . gmdate( 'Ymd-His' );
+	$export_prefix = mfw_audit_get_export_prefix();
 	$dataset = mfw_build_audit_export_dataset();
 	$context = $dataset['context'];
 	$artifacts = $dataset['artifacts'];
 	$metadata = $dataset['metadata'];
-	$storage = mfw_audit_get_storage_paths( $export_id );
+	$summary = $dataset['summary'];
+	$storage = mfw_audit_get_storage_paths( $export_prefix );
 	if ( is_wp_error( $storage ) ) {
 		return $storage;
 	}
@@ -376,7 +451,7 @@ function mfw_generate_audit_export_bundle() {
 		if ( empty( $artifacts[ $artifact_key ] ) ) {
 			continue;
 		}
-		$file_name = $definition['filename'];
+		$file_name = $export_prefix . '-' . $definition['filename'];
 		$file_path = trailingslashit( $storage['dir'] ) . $file_name;
 		$file_url = trailingslashit( $storage['url'] ) . rawurlencode( $file_name );
 		$result = mfw_write_audit_csv( $file_path, $artifacts[ $artifact_key ], $definition['columns'] );
@@ -386,17 +461,18 @@ function mfw_generate_audit_export_bundle() {
 		$bundle_files[] = array( 'type' => $artifact_key, 'name' => $file_name, 'path' => $file_path, 'url' => $file_url, 'size' => file_exists( $file_path ) ? filesize( $file_path ) : 0, 'rows' => isset( $context['row_counts'][ $artifact_key ] ) ? (int) $context['row_counts'][ $artifact_key ] : 0 );
 	}
 
-	$metadata_file_name = 'metadata.json';
+	$metadata_file_name = $export_prefix . '-metadata.json';
 	$metadata_file_path = trailingslashit( $storage['dir'] ) . $metadata_file_name;
 	$metadata_file_url = trailingslashit( $storage['url'] ) . rawurlencode( $metadata_file_name );
 	$metadata['files'] = $bundle_files;
+	$metadata['summary'] = $summary;
 	$metadata_result = mfw_write_audit_json( $metadata_file_path, $metadata );
 	if ( is_wp_error( $metadata_result ) ) {
 		return $metadata_result;
 	}
 	$bundle_files[] = array( 'type' => 'metadata', 'name' => $metadata_file_name, 'path' => $metadata_file_path, 'url' => $metadata_file_url, 'size' => file_exists( $metadata_file_path ) ? filesize( $metadata_file_path ) : 0, 'rows' => 1 );
 
-	$zip_file_name = 'export.zip';
+	$zip_file_name = $export_prefix . '.zip';
 	$zip_file_path = trailingslashit( $storage['dir'] ) . $zip_file_name;
 	$zip_file_url = trailingslashit( $storage['url'] ) . rawurlencode( $zip_file_name );
 	$zip_created = mfw_create_audit_zip( $zip_file_path, array_map( static function ( $file ) { return array( 'name' => $file['name'], 'path' => $file['path'] ); }, $bundle_files ) );
@@ -404,9 +480,9 @@ function mfw_generate_audit_export_bundle() {
 		$bundle_files[] = array( 'type' => 'zip', 'name' => $zip_file_name, 'path' => $zip_file_path, 'url' => $zip_file_url, 'size' => file_exists( $zip_file_path ) ? filesize( $zip_file_path ) : 0, 'rows' => 0 );
 	}
 
-	$record = array( 'export_id' => $export_id, 'generated_at' => $context['generated_at'], 'generated_at_gmt' => $context['generated_at_gmt'], 'generated_by' => $context['generated_by'], 'row_total' => $context['row_total'], 'row_counts' => $context['row_counts'], 'detected_plugins' => $context['detected_plugins'], 'detected_cpts' => $context['detected_cpts'], 'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(), 'warnings' => $context['warnings'], 'files' => $bundle_files );
+	$record = array( 'export_id' => $export_prefix, 'generated_at' => $context['generated_at'], 'generated_at_gmt' => $context['generated_at_gmt'], 'generated_by' => $context['generated_by'], 'row_total' => $context['row_total'], 'row_counts' => $context['row_counts'], 'summary' => $summary, 'detected_plugins' => $context['detected_plugins'], 'detected_cpts' => $context['detected_cpts'], 'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(), 'warnings' => $context['warnings'], 'files' => $bundle_files );
 	mfw_add_audit_history_record( $record );
-	return array( 'record' => $record, 'files' => $bundle_files );
+	return array( 'record' => $record, 'files' => $bundle_files, 'summary' => $summary );
 }
 
 function mfw_handle_audit_export() {
@@ -433,9 +509,34 @@ function mfw_get_audit_record_total( $record ) {
 	return $total;
 }
 
+function mfw_get_audit_record_summary( $record ) {
+	return isset( $record['summary'] ) && is_array( $record['summary'] ) ? $record['summary'] : array();
+}
+
+function mfw_render_audit_summary_table( $summary ) {
+	if ( empty( $summary ) || ! is_array( $summary ) ) {
+		return;
+	}
+	?>
+	<table class="widefat striped" style="max-width: 900px; margin: 1rem 0 2rem;">
+		<thead><tr><th><?php esc_html_e( 'Metric', 'migration-freeze-webspark' ); ?></th><th><?php esc_html_e( 'Count', 'migration-freeze-webspark' ); ?></th></tr></thead>
+		<tbody>
+			<tr><td><?php esc_html_e( 'Published / Private / Future / Pending / Retained', 'migration-freeze-webspark' ); ?></td><td><?php echo esc_html( isset( $summary['published_like_content'] ) ? $summary['published_like_content'] : 0 ); ?></td></tr>
+			<tr><td><?php esc_html_e( 'Drafts + Trash', 'migration-freeze-webspark' ); ?></td><td><?php echo esc_html( isset( $summary['draft_trash_content'] ) ? $summary['draft_trash_content'] : 0 ); ?></td></tr>
+			<tr><td><?php esc_html_e( 'All content', 'migration-freeze-webspark' ); ?></td><td><?php echo esc_html( isset( $summary['all_content'] ) ? $summary['all_content'] : 0 ); ?></td></tr>
+			<tr><td><?php esc_html_e( 'Taxonomy term archive pages', 'migration-freeze-webspark' ); ?></td><td><?php echo esc_html( isset( $summary['taxonomy_term_pages'] ) ? $summary['taxonomy_term_pages'] : 0 ); ?></td></tr>
+			<tr><td><?php esc_html_e( 'Taxonomy landing pages', 'migration-freeze-webspark' ); ?></td><td><?php echo esc_html( isset( $summary['taxonomy_landing_pages'] ) ? $summary['taxonomy_landing_pages'] : 0 ); ?></td></tr>
+			<tr><td><?php esc_html_e( 'General archive / index pages', 'migration-freeze-webspark' ); ?></td><td><?php echo esc_html( isset( $summary['general_archive_pages'] ) ? $summary['general_archive_pages'] : 0 ); ?></td></tr>
+		</tbody>
+	</table>
+	<?php
+}
+
 function mfw_render_audit_trail_page() {
 	$history = mfw_get_audit_history();
-	$notice = mfw_get_audit_notice();
+	$notice  = mfw_get_audit_notice();
+	$latest  = ! empty( $history ) ? $history[0] : array();
+	$summary = mfw_get_audit_record_summary( $latest );
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Migration Audit Trail', 'migration-freeze-webspark' ); ?></h1>
@@ -448,6 +549,7 @@ function mfw_render_audit_trail_page() {
 			<input type="hidden" name="action" value="mfw_generate_audit_export" />
 			<?php submit_button( __( 'Generate Audit Export', 'migration-freeze-webspark' ), 'primary', 'submit', false ); ?>
 		</form>
+		<?php mfw_render_audit_summary_table( $summary ); ?>
 		<?php if ( empty( $history ) ) : ?>
 			<p><?php esc_html_e( 'No audit exports have been generated yet.', 'migration-freeze-webspark' ); ?></p>
 		<?php else : ?>
