@@ -70,6 +70,7 @@ require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
 require_once MFW_PLUGIN_PATH . 'inc/post-statuses.php';
 require_once MFW_PLUGIN_PATH . 'inc/settings.php';
 require_once MFW_PLUGIN_PATH . 'inc/audit-trail.php';
+require_once MFW_PLUGIN_PATH . 'inc/audit-summary-ui.php';
 
 function mfw_bootstrap() {
 	load_plugin_textdomain( 'migration-freeze-webspark', false, dirname( MFW_PLUGIN_BASENAME ) . '/languages' );
