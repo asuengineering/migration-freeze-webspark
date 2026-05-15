@@ -40,7 +40,7 @@ function mfw_register_audit_export_handler() {
 add_action( 'admin_init', 'mfw_register_audit_export_handler' );
 
 /**
- * Return the audit history option.
+ * Return the audit history.
  *
  * @return array<int, array<string, mixed>>
  */
@@ -51,7 +51,7 @@ function mfw_get_audit_history() {
 }
 
 /**
- * Persist the rolling audit history.
+ * Save the rolling audit history.
  *
  * @param array<int, array<string, mixed>> $history History records.
  *
@@ -64,14 +64,14 @@ function mfw_save_audit_history( $history ) {
 }
 
 /**
- * Add a new record to the rolling audit history.
+ * Add a history record.
  *
  * @param array<string, mixed> $record Record payload.
  *
  * @return void
  */
 function mfw_add_audit_history_record( $record ) {
-	$history = mfw_get_audit_history();
+	$history   = mfw_get_audit_history();
 	array_unshift( $history, $record );
 	mfw_save_audit_history( $history );
 }
@@ -86,7 +86,7 @@ function mfw_get_audit_notice_key() {
 }
 
 /**
- * Store a temporary audit export notice.
+ * Store a temporary audit notice.
  *
  * @param array<string, mixed> $notice Notice payload.
  *
@@ -97,7 +97,7 @@ function mfw_set_audit_notice( $notice ) {
 }
 
 /**
- * Retrieve the temporary audit export notice.
+ * Retrieve the temporary audit notice.
  *
  * @return array<string, mixed>|false
  */
@@ -138,7 +138,7 @@ function mfw_audit_is_plugin_active( $basename ) {
 }
 
 /**
- * Return detected plugins that affect the export.
+ * Return detected plugins that influence the audit.
  *
  * @return array<string, array<string, string>>
  */
@@ -181,49 +181,170 @@ function mfw_get_detected_audit_plugins() {
 }
 
 /**
- * Return the audit CSV columns.
+ * Return the artifact definitions.
  *
- * @return array<int, string>
+ * @return array<string, array<string, mixed>>
  */
-function mfw_get_audit_csv_columns() {
+function mfw_get_audit_artifacts() {
 	return array(
-		'environment_name',
-		'site_id',
-		'record_type',
-		'object_type',
-		'object_id',
-		'status',
-		'title',
-		'url',
-		'slug',
-		'parent_id',
-		'taxonomy',
-		'term_id',
-		'related_object_id',
-		'related_object_type',
-		'media_id',
-		'filename',
-		'mime_type',
-		'menu_name',
-		'menu_slug',
-		'menu_location',
-		'role',
-		'plugin',
-		'created_at',
-		'modified_at',
-		'details_json',
+		'content' => array(
+			'label'      => 'Content',
+			'record_type' => 'content',
+			'filename'    => 'content.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'status',
+				'title',
+				'url',
+				'slug',
+				'parent_id',
+				'created_at',
+				'modified_at',
+				'details_json',
+			),
+		),
+		'taxonomy_term' => array(
+			'label'      => 'Taxonomies',
+			'record_type' => 'taxonomy_term',
+			'filename'    => 'taxonomies.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'title',
+				'url',
+				'slug',
+				'parent_id',
+				'taxonomy',
+				'term_id',
+				'details_json',
+			),
+		),
+		'taxonomy_relationship' => array(
+			'label'      => 'Taxonomy Relationships',
+			'record_type' => 'taxonomy_relationship',
+			'filename'    => 'taxonomy-relationships.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'title',
+				'url',
+				'taxonomy',
+				'term_id',
+				'related_object_id',
+				'related_object_type',
+				'details_json',
+			),
+		),
+		'media' => array(
+			'label'      => 'Media',
+			'record_type' => 'media',
+			'filename'    => 'media.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'title',
+				'url',
+				'media_id',
+				'filename',
+				'mime_type',
+				'caption',
+				'alt_text',
+				'details_json',
+			),
+		),
+		'menu' => array(
+			'label'      => 'Menus',
+			'record_type' => 'menu',
+			'filename'    => 'menus.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'title',
+				'menu_name',
+				'menu_slug',
+				'menu_location',
+				'details_json',
+			),
+		),
+		'menu_item' => array(
+			'label'      => 'Menu Items',
+			'record_type' => 'menu_item',
+			'filename'    => 'menu-items.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'title',
+				'url',
+				'parent_id',
+				'related_object_id',
+				'related_object_type',
+				'menu_name',
+				'menu_slug',
+				'menu_location',
+				'details_json',
+			),
+		),
+		'user' => array(
+			'label'      => 'Users',
+			'record_type' => 'user',
+			'filename'    => 'users.csv',
+			'columns'     => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'title',
+				'role',
+				'registered_at',
+				'details_json',
+			),
+		),
 	);
 }
 
 /**
- * Build a CSV row with defaults.
+ * Return the CSV columns for an artifact.
  *
- * @param array<string, mixed> $values Row values.
+ * @param string $artifact_key Artifact key.
+ *
+ * @return array<int, string>
+ */
+function mfw_get_audit_columns( $artifact_key ) {
+	$artifacts = mfw_get_audit_artifacts();
+
+	return isset( $artifacts[ $artifact_key ]['columns'] ) ? $artifacts[ $artifact_key ]['columns'] : array();
+}
+
+/**
+ * Create a normalized row.
+ *
+ * @param string               $artifact_key Artifact key.
+ * @param array<string, mixed> $values       Row data.
  *
  * @return array<string, string>
  */
-function mfw_audit_build_row( $values ) {
-	$row = array_fill_keys( mfw_get_audit_csv_columns(), '' );
+function mfw_audit_build_row( $artifact_key, $values ) {
+	$row = array_fill_keys( mfw_get_audit_columns( $artifact_key ), '' );
 
 	foreach ( $values as $key => $value ) {
 		if ( ! array_key_exists( $key, $row ) ) {
@@ -241,9 +362,9 @@ function mfw_audit_build_row( $values ) {
 }
 
 /**
- * Encode data for the details_json column.
+ * Encode data for details_json.
  *
- * @param mixed $data Data to encode.
+ * @param mixed $data Data.
  *
  * @return string
  */
@@ -256,7 +377,7 @@ function mfw_audit_json_encode( $data ) {
 /**
  * Determine if a post type is system content.
  *
- * @param string $post_type Post type name.
+ * @param string $post_type Post type.
  *
  * @return bool
  */
@@ -290,9 +411,9 @@ function mfw_audit_is_system_post_type( $post_type ) {
 }
 
 /**
- * Determine if a taxonomy is system-only content.
+ * Determine if a taxonomy is system-only.
  *
- * @param string $taxonomy Taxonomy name.
+ * @param string $taxonomy Taxonomy.
  *
  * @return bool
  */
@@ -310,7 +431,7 @@ function mfw_audit_is_system_taxonomy( $taxonomy ) {
 }
 
 /**
- * Return all audit-relevant post types.
+ * Return audit-relevant post types.
  *
  * @param array<string, mixed> $metadata Metadata reference.
  *
@@ -338,7 +459,6 @@ function mfw_audit_get_content_types( &$metadata ) {
 
 	if ( ! empty( $unexpected ) ) {
 		$metadata['warnings'][] = sprintf(
-			/* translators: %s: comma-separated list of post types. */
 			__( 'Unexpected content types detected: %s', 'migration-freeze-webspark' ),
 			implode( ', ', $unexpected )
 		);
@@ -348,7 +468,7 @@ function mfw_audit_get_content_types( &$metadata ) {
 }
 
 /**
- * Get the export storage paths.
+ * Build the export storage paths.
  *
  * @param string $export_id Export identifier.
  *
@@ -392,7 +512,7 @@ function mfw_audit_get_export_context() {
 		'site_name'        => $site_name,
 		'site_url'         => $site_url,
 		'generated_at'     => current_time( 'mysql' ),
-		'generated_at_gmt' => current_time( 'mysql', true ),
+		'generated_at_gmt'  => current_time( 'mysql', true ),
 		'generated_by'     => array(
 			'user_id'    => $current_user->ID,
 			'user_login' => $current_user->user_login,
@@ -400,32 +520,37 @@ function mfw_audit_get_export_context() {
 		),
 		'detected_plugins' => mfw_get_detected_audit_plugins(),
 		'detected_cpts'    => array(),
-		'warnings'        => array(),
+		'warnings'         => array(),
 	);
 }
 
 /**
- * Append a row to the export.
+ * Append a row to an artifact.
  *
- * @param array<int, array<string, string>> $rows Row collection.
- * @param array<string, string>             $row  Row data.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param string                                            $artifact_key Artifact key.
+ * @param array<string, mixed>                              $row Row data.
  *
  * @return void
  */
-function mfw_audit_push_row( &$rows, $row ) {
-	$rows[] = $row;
+function mfw_audit_push_row( &$artifacts, $artifact_key, $row ) {
+	if ( ! isset( $artifacts[ $artifact_key ] ) ) {
+		$artifacts[ $artifact_key ] = array();
+	}
+
+	$artifacts[ $artifact_key ][] = mfw_audit_build_row( $artifact_key, $row );
 }
 
 /**
  * Collect content rows.
  *
- * @param array<int, array<string, string>> $rows         Row collection.
- * @param array<string, mixed>             $metadata     Metadata reference.
- * @param array<int, WP_Post>              $content_posts Content post cache.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param array<string, mixed>                              $metadata Metadata.
+ * @param array<int, WP_Post>                               $content_posts Content cache.
  *
  * @return void
  */
-function mfw_audit_collect_content_rows( &$rows, &$metadata, &$content_posts ) {
+function mfw_audit_collect_content_rows( &$artifacts, &$metadata, &$content_posts ) {
 	$allowed_statuses = array( 'publish', 'future', 'draft', 'pending', 'private' );
 	$content_types    = mfw_audit_get_content_types( $metadata );
 	$metadata['detected_cpts'] = $content_types;
@@ -451,34 +576,31 @@ function mfw_audit_collect_content_rows( &$rows, &$metadata, &$content_posts ) {
 		foreach ( $posts as $post ) {
 			$content_posts[] = $post;
 			mfw_audit_push_row(
-				$rows,
-				mfw_audit_build_row(
-					array(
-						'environment_name' => $metadata['environment_name'],
-						'site_id'          => $metadata['site_id'],
-						'record_type'      => 'content',
-						'object_type'      => $post->post_type,
-						'object_id'        => $post->ID,
-						'status'           => $post->post_status,
-						'title'            => get_the_title( $post ),
-						'url'              => get_permalink( $post ),
-						'slug'             => $post->post_name,
-						'parent_id'        => $post->post_parent,
-						'created_at'       => $post->post_date,
-						'modified_at'      => $post->post_modified,
-						'details_json'     => mfw_audit_json_encode(
-							array(
-								'post_author'   => $post->post_author,
-								'post_type'     => $post->post_type,
-								'post_status'   => $post->post_status,
-								'post_parent'   => $post->post_parent,
-								'post_date_gmt' => $post->post_date_gmt,
-								'post_modified_gmt' => $post->post_modified_gmt,
-								'comment_status' => $post->comment_status,
-								'ping_status'   => $post->ping_status,
-							)
-						),
-					)
+				$artifacts,
+				'content',
+				array(
+					'environment_name' => $metadata['environment_name'],
+					'site_id'          => $metadata['site_id'],
+					'record_type'      => 'content',
+					'object_type'      => $post->post_type,
+					'object_id'        => $post->ID,
+					'status'           => $post->post_status,
+					'title'            => get_the_title( $post ),
+					'url'              => get_permalink( $post ),
+					'slug'             => $post->post_name,
+					'parent_id'        => $post->post_parent,
+					'created_at'       => $post->post_date,
+					'modified_at'      => $post->post_modified,
+					'details_json'     => array(
+						'post_author'      => $post->post_author,
+						'post_type'        => $post->post_type,
+						'post_status'      => $post->post_status,
+						'post_parent'      => $post->post_parent,
+						'post_date_gmt'    => $post->post_date_gmt,
+						'post_modified_gmt'=> $post->post_modified_gmt,
+						'comment_status'   => $post->comment_status,
+						'ping_status'      => $post->ping_status,
+					),
 				)
 			);
 		}
@@ -488,12 +610,12 @@ function mfw_audit_collect_content_rows( &$rows, &$metadata, &$content_posts ) {
 /**
  * Collect taxonomy term rows.
  *
- * @param array<int, array<string, string>> $rows     Row collection.
- * @param array<string, mixed>             $metadata Metadata reference.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param array<string, mixed>                              $metadata Metadata.
  *
  * @return void
  */
-function mfw_audit_collect_taxonomy_term_rows( &$rows, &$metadata ) {
+function mfw_audit_collect_taxonomy_term_rows( &$artifacts, &$metadata ) {
 	$taxonomies = get_taxonomies( array( 'show_ui' => true ), 'objects' );
 
 	foreach ( $taxonomies as $taxonomy => $taxonomy_object ) {
@@ -510,7 +632,6 @@ function mfw_audit_collect_taxonomy_term_rows( &$rows, &$metadata ) {
 
 		if ( is_wp_error( $terms ) ) {
 			$metadata['warnings'][] = sprintf(
-				/* translators: %s: taxonomy name. */
 				__( 'Could not read taxonomy terms for %s.', 'migration-freeze-webspark' ),
 				$taxonomy
 			);
@@ -519,36 +640,30 @@ function mfw_audit_collect_taxonomy_term_rows( &$rows, &$metadata ) {
 
 		foreach ( $terms as $term ) {
 			$archive_url = get_term_link( $term );
-
 			if ( is_wp_error( $archive_url ) ) {
 				$archive_url = '';
 			}
 
 			mfw_audit_push_row(
-				$rows,
-				mfw_audit_build_row(
-					array(
-						'environment_name' => $metadata['environment_name'],
-						'site_id'          => $metadata['site_id'],
-						'record_type'      => 'taxonomy_term',
-						'object_type'      => $taxonomy,
-						'object_id'        => $term->term_id,
-						'status'           => 'automatic',
-						'title'            => $term->name,
-						'url'              => $archive_url,
-						'slug'             => $term->slug,
-						'parent_id'        => $term->parent,
-						'taxonomy'         => $taxonomy,
-						'term_id'          => $term->term_id,
-						'details_json'     => mfw_audit_json_encode(
-							array(
-								'description' => $term->description,
-								'count'       => $term->count,
-								'parent'      => $term->parent,
-								'archive_url' => $archive_url,
-							)
-						),
-					)
+				$artifacts,
+				'taxonomy_term',
+				array(
+					'environment_name' => $metadata['environment_name'],
+					'site_id'          => $metadata['site_id'],
+					'record_type'      => 'taxonomy_term',
+					'object_type'      => $taxonomy,
+					'object_id'        => $term->term_id,
+					'title'            => $term->name,
+					'url'              => $archive_url,
+					'slug'             => $term->slug,
+					'parent_id'        => $term->parent,
+					'taxonomy'         => $taxonomy,
+					'term_id'          => $term->term_id,
+					'details_json'     => array(
+						'description' => $term->description,
+						'count'       => $term->count,
+						'archive_url'  => $archive_url,
+					),
 				)
 			);
 		}
@@ -558,13 +673,13 @@ function mfw_audit_collect_taxonomy_term_rows( &$rows, &$metadata ) {
 /**
  * Collect taxonomy relationship rows.
  *
- * @param array<int, array<string, string>> $rows         Row collection.
- * @param array<string, mixed>             $metadata     Metadata reference.
- * @param array<int, WP_Post>              $content_posts Content post cache.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param array<string, mixed>                              $metadata Metadata.
+ * @param array<int, WP_Post>                               $content_posts Content cache.
  *
  * @return void
  */
-function mfw_audit_collect_taxonomy_relationship_rows( &$rows, &$metadata, $content_posts ) {
+function mfw_audit_collect_taxonomy_relationship_rows( &$artifacts, &$metadata, $content_posts ) {
 	foreach ( $content_posts as $post ) {
 		$taxonomies = get_object_taxonomies( $post->post_type, 'names' );
 
@@ -577,43 +692,33 @@ function mfw_audit_collect_taxonomy_relationship_rows( &$rows, &$metadata, $cont
 				continue;
 			}
 
-			$terms = wp_get_post_terms(
-				$post->ID,
-				$taxonomy,
-				array( 'fields' => 'all' )
-			);
-
+			$terms = wp_get_post_terms( $post->ID, $taxonomy, array( 'fields' => 'all' ) );
 			if ( is_wp_error( $terms ) || empty( $terms ) ) {
 				continue;
 			}
 
 			foreach ( $terms as $term ) {
 				mfw_audit_push_row(
-					$rows,
-					mfw_audit_build_row(
-						array(
-							'environment_name'    => $metadata['environment_name'],
-							'site_id'             => $metadata['site_id'],
-							'record_type'         => 'taxonomy_relationship',
-							'object_type'         => $post->post_type,
-							'object_id'           => $term->term_id,
-							'status'              => $post->post_status,
-							'title'               => $term->name,
-							'url'                 => get_permalink( $post ),
-							'slug'                => $post->post_name,
-							'taxonomy'            => $taxonomy,
-							'term_id'             => $term->term_id,
-							'related_object_id'   => $post->ID,
-							'related_object_type' => $post->post_type,
-							'details_json'        => mfw_audit_json_encode(
-								array(
-									'related_title' => get_the_title( $post ),
-									'related_url'   => get_permalink( $post ),
-									'taxonomy'      => $taxonomy,
-									'term_slug'     => $term->slug,
-								)
-							),
-						)
+					$artifacts,
+					'taxonomy_relationship',
+					array(
+						'environment_name' => $metadata['environment_name'],
+						'site_id'          => $metadata['site_id'],
+						'record_type'      => 'taxonomy_relationship',
+						'object_type'      => $post->post_type,
+						'object_id'        => $term->term_id,
+						'title'            => get_the_title( $post ),
+						'url'              => get_permalink( $post ),
+						'taxonomy'         => $taxonomy,
+						'term_id'          => $term->term_id,
+						'related_object_id'=> $post->ID,
+						'related_object_type' => $post->post_type,
+						'details_json'     => array(
+							'related_title' => get_the_title( $post ),
+							'related_url'   => get_permalink( $post ),
+							'term_name'     => $term->name,
+							'term_slug'     => $term->slug,
+						),
 					)
 				);
 			}
@@ -624,12 +729,12 @@ function mfw_audit_collect_taxonomy_relationship_rows( &$rows, &$metadata, $cont
 /**
  * Collect media rows.
  *
- * @param array<int, array<string, string>> $rows     Row collection.
- * @param array<string, mixed>             $metadata Metadata reference.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param array<string, mixed>                              $metadata Metadata.
  *
  * @return void
  */
-function mfw_audit_collect_media_rows( &$rows, &$metadata ) {
+function mfw_audit_collect_media_rows( &$artifacts, &$metadata ) {
 	$attachments = get_posts(
 		array(
 			'post_type'              => 'attachment',
@@ -650,75 +755,72 @@ function mfw_audit_collect_media_rows( &$rows, &$metadata ) {
 	foreach ( $attachments as $attachment ) {
 		$file_path = get_attached_file( $attachment->ID );
 		$file_name = $file_path ? basename( $file_path ) : '';
-		$file_size = ( $file_path && file_exists( $file_path ) ) ? filesize( $file_path ) : 0;
-		$alt_text  = get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true );
-		$attachment_metadata  = wp_get_attachment_metadata( $attachment->ID );
+		$mime_type  = $attachment->post_mime_type;
+		$alt_text   = '';
+
+		if ( 0 === strpos( $mime_type, 'image/' ) ) {
+			$alt_text = (string) get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true );
+		}
 
 		mfw_audit_push_row(
-			$rows,
-			mfw_audit_build_row(
-				array(
-					'environment_name' => $metadata['environment_name'],
-					'site_id'          => $metadata['site_id'],
-					'record_type'      => 'media',
-					'object_type'      => 'attachment',
-					'object_id'        => $attachment->ID,
-					'status'           => $attachment->post_status,
-					'title'            => get_the_title( $attachment ),
-					'url'              => wp_get_attachment_url( $attachment->ID ),
-					'slug'             => $attachment->post_name,
-					'media_id'         => $attachment->ID,
-					'filename'         => $file_name,
-					'mime_type'        => $attachment->post_mime_type,
-					'created_at'       => $attachment->post_date,
-					'modified_at'      => $attachment->post_modified,
-					'details_json'     => mfw_audit_json_encode(
-						array(
-							'alt_text'        => $alt_text,
-							'upload_path'     => $file_path,
-							'upload_metadata' => $attachment_metadata,
-							'file_size'       => $file_size,
-						)
-					),
-				)
+			$artifacts,
+			'media',
+			array(
+				'environment_name' => $metadata['environment_name'],
+				'site_id'          => $metadata['site_id'],
+				'record_type'      => 'media',
+				'object_type'      => 'attachment',
+				'object_id'        => $attachment->ID,
+				'title'            => get_the_title( $attachment ),
+				'url'              => wp_get_attachment_url( $attachment->ID ),
+				'media_id'         => $attachment->ID,
+				'filename'         => $file_name,
+				'mime_type'        => $mime_type,
+				'caption'          => $attachment->post_excerpt,
+				'alt_text'         => $alt_text,
+				'details_json'     => array(
+					'upload_path'     => $file_path,
+					'attachment_meta' => wp_get_attachment_metadata( $attachment->ID ),
+					'file_size'       => ( $file_path && file_exists( $file_path ) ) ? filesize( $file_path ) : 0,
+				),
 			)
 		);
 	}
 }
 
 /**
- * Get menu locations for a menu term ID.
+ * Get menu locations for a menu ID.
  *
- * @param int $menu_id Menu term ID.
+ * @param int $menu_id Menu ID.
  *
  * @return array<int, string>
  */
 function mfw_audit_get_menu_locations_for_menu( $menu_id ) {
 	$locations = get_nav_menu_locations();
-	$matched_locations = array();
+	$matched   = array();
 
 	if ( ! is_array( $locations ) ) {
-		return $matched_locations;
+		return $matched;
 	}
 
 	foreach ( $locations as $location => $assigned_menu_id ) {
 		if ( (int) $assigned_menu_id === (int) $menu_id ) {
-			$matched_locations[] = $location;
+			$matched[] = $location;
 		}
 	}
 
-	return $matched_locations;
+	return $matched;
 }
 
 /**
  * Collect menu rows.
  *
- * @param array<int, array<string, string>> $rows     Row collection.
- * @param array<string, mixed>             $metadata Metadata reference.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param array<string, mixed>                              $metadata Metadata.
  *
  * @return void
  */
-function mfw_audit_collect_menu_rows( &$rows, &$metadata ) {
+function mfw_audit_collect_menu_rows( &$artifacts, &$metadata ) {
 	$menus = wp_get_nav_menus();
 
 	if ( empty( $menus ) || is_wp_error( $menus ) ) {
@@ -731,28 +833,23 @@ function mfw_audit_collect_menu_rows( &$rows, &$metadata ) {
 		$locations   = mfw_audit_get_menu_locations_for_menu( $menu->term_id );
 
 		mfw_audit_push_row(
-			$rows,
-			mfw_audit_build_row(
-				array(
-					'environment_name' => $metadata['environment_name'],
-					'site_id'          => $metadata['site_id'],
-					'record_type'      => 'menu',
-					'object_type'      => 'nav_menu',
-					'object_id'        => $menu->term_id,
-					'status'           => 'active',
-					'title'            => $menu->name,
-					'slug'             => $menu->slug,
-					'menu_name'        => $menu->name,
-					'menu_slug'        => $menu->slug,
-					'menu_location'    => implode( ',', $locations ),
-					'details_json'     => mfw_audit_json_encode(
-						array(
-							'description' => $menu->description,
-							'item_count'  => count( $menu_items ),
-							'locations'   => $locations,
-						)
-					),
-				)
+			$artifacts,
+			'menu',
+			array(
+				'environment_name' => $metadata['environment_name'],
+				'site_id'          => $metadata['site_id'],
+				'record_type'      => 'menu',
+				'object_type'      => 'nav_menu',
+				'object_id'        => $menu->term_id,
+				'title'            => $menu->name,
+				'menu_name'        => $menu->name,
+				'menu_slug'        => $menu->slug,
+				'menu_location'    => implode( ',', $locations ),
+				'details_json'     => array(
+					'description' => $menu->description,
+					'item_count'  => count( $menu_items ),
+					'locations'   => $locations,
+				),
 			)
 		);
 
@@ -761,35 +858,31 @@ function mfw_audit_collect_menu_rows( &$rows, &$metadata ) {
 			$object_type = isset( $menu_item->object ) ? $menu_item->object : '';
 
 			mfw_audit_push_row(
-				$rows,
-				mfw_audit_build_row(
-					array(
-						'environment_name'   => $metadata['environment_name'],
-						'site_id'            => $metadata['site_id'],
-						'record_type'        => 'menu_item',
-						'object_type'        => 'menu_item',
-						'object_id'          => $menu_item->ID,
-						'status'             => 'active',
-						'title'              => $menu_item->title,
-						'url'                => $menu_item->url,
-						'parent_id'          => $menu_item->menu_item_parent,
-						'related_object_id'  => $object_id,
-						'related_object_type'=> $object_type,
-						'menu_name'          => $menu->name,
-						'menu_slug'          => $menu->slug,
-						'menu_location'      => implode( ',', $locations ),
-						'details_json'       => mfw_audit_json_encode(
-							array(
-								'menu_order'   => $menu_item->menu_order,
-								'target'       => $menu_item->target,
-								'xfn'          => $menu_item->xfn,
-								'classes'      => $menu_item->classes,
-								'description'  => $menu_item->description,
-								'object_id'    => $object_id,
-								'object_type'  => $object_type,
-							)
-						),
-					)
+				$artifacts,
+				'menu_item',
+				array(
+					'environment_name'    => $metadata['environment_name'],
+					'site_id'             => $metadata['site_id'],
+					'record_type'         => 'menu_item',
+					'object_type'         => 'menu_item',
+					'object_id'           => $menu_item->ID,
+					'title'               => $menu_item->title,
+					'url'                 => $menu_item->url,
+					'parent_id'           => $menu_item->menu_item_parent,
+					'related_object_id'   => $object_id,
+					'related_object_type' => $object_type,
+					'menu_name'           => $menu->name,
+					'menu_slug'           => $menu->slug,
+					'menu_location'       => implode( ',', $locations ),
+					'details_json'        => array(
+						'menu_order'  => $menu_item->menu_order,
+						'target'      => $menu_item->target,
+						'xfn'         => $menu_item->xfn,
+						'classes'     => $menu_item->classes,
+						'description' => $menu_item->description,
+						'object_id'   => $object_id,
+						'object_type' => $object_type,
+					),
 				)
 			);
 		}
@@ -799,382 +892,118 @@ function mfw_audit_collect_menu_rows( &$rows, &$metadata ) {
 /**
  * Collect user rows.
  *
- * @param array<int, array<string, string>> $rows     Row collection.
- * @param array<string, mixed>             $metadata Metadata reference.
+ * @param array<string, array<int, array<string, string>>> $artifacts Artifacts.
+ * @param array<string, mixed>                              $metadata Metadata.
  *
  * @return void
  */
-function mfw_audit_collect_user_rows( &$rows, &$metadata ) {
-	$users = get_users(
-		array(
-			'orderby' => 'ID',
-			'order'   => 'ASC',
-			'fields'  => 'all',
-		)
+function mfw_audit_collect_user_rows( &$artifacts, &$metadata ) {
+	$user_args = array(
+		'orderby' => 'ID',
+		'order'   => 'ASC',
+		'fields'  => 'all',
 	);
+
+	if ( is_multisite() ) {
+		$user_args['blog_id'] = get_current_blog_id();
+	}
+
+	$users = get_users( $user_args );
 
 	foreach ( $users as $user ) {
 		$roles = is_array( $user->roles ) ? implode( ',', $user->roles ) : '';
 
 		mfw_audit_push_row(
-			$rows,
-			mfw_audit_build_row(
-				array(
-					'environment_name' => $metadata['environment_name'],
-					'site_id'          => $metadata['site_id'],
-					'record_type'      => 'user',
-					'object_type'      => 'user',
-					'object_id'        => $user->ID,
-					'status'           => 'active',
-					'title'            => $user->display_name ? $user->display_name : $user->user_login,
-					'role'             => $roles,
-					'created_at'       => $user->user_registered,
-					'details_json'     => mfw_audit_json_encode(
-						array(
-							'user_login'   => $user->user_login,
-							'user_email'   => $user->user_email,
-							'display_name' => $user->display_name,
-							'roles'        => $user->roles,
-							'registered_at'=> $user->user_registered,
-						)
-					),
-				)
+			$artifacts,
+			'user',
+			array(
+				'environment_name' => $metadata['environment_name'],
+				'site_id'          => $metadata['site_id'],
+				'record_type'      => 'user',
+				'object_type'      => 'user',
+				'object_id'        => $user->ID,
+				'title'            => $user->display_name ? $user->display_name : $user->user_login,
+				'role'             => $roles,
+				'registered_at'    => $user->user_registered,
+				'details_json'     => array(
+					'user_login'   => $user->user_login,
+					'user_email'   => $user->user_email,
+					'display_name' => $user->display_name,
+					'roles'        => $user->roles,
+				),
 			)
 		);
 	}
 }
 
 /**
- * Collect Gravity Forms rows.
- *
- * @param array<int, array<string, string>> $rows     Row collection.
- * @param array<string, mixed>             $metadata Metadata reference.
- *
- * @return void
- */
-function mfw_audit_collect_gravity_forms_rows( &$rows, &$metadata ) {
-	if ( ! class_exists( 'GFAPI' ) ) {
-		return;
-	}
-
-	$forms = GFAPI::get_forms();
-
-	if ( empty( $forms ) || is_wp_error( $forms ) ) {
-		return;
-	}
-
-	foreach ( $forms as $form_stub ) {
-		$form_id = isset( $form_stub['id'] ) ? (int) $form_stub['id'] : 0;
-		$form    = GFAPI::get_form( $form_id );
-
-		if ( empty( $form ) || is_wp_error( $form ) ) {
-			continue;
-		}
-
-		mfw_audit_push_row(
-			$rows,
-			mfw_audit_build_row(
-				array(
-					'environment_name' => $metadata['environment_name'],
-					'site_id'          => $metadata['site_id'],
-					'record_type'      => 'gravity_form',
-					'object_type'      => 'gravity_form',
-					'object_id'        => $form_id,
-					'status'           => ! empty( $form['is_active'] ) ? 'active' : 'inactive',
-					'title'            => isset( $form['title'] ) ? $form['title'] : '',
-					'plugin'           => 'gravity_forms',
-					'details_json'     => mfw_audit_json_encode(
-						array(
-							'description'          => isset( $form['description'] ) ? $form['description'] : '',
-							'button'               => isset( $form['button'] ) ? $form['button'] : array(),
-							'labelPlacement'       => isset( $form['labelPlacement'] ) ? $form['labelPlacement'] : '',
-							'descriptionPlacement' => isset( $form['descriptionPlacement'] ) ? $form['descriptionPlacement'] : '',
-							'cssClass'             => isset( $form['cssClass'] ) ? $form['cssClass'] : '',
-							'field_count'          => isset( $form['fields'] ) && is_array( $form['fields'] ) ? count( $form['fields'] ) : 0,
-						)
-					),
-				)
-			)
-		);
-
-		if ( ! empty( $form['notifications'] ) && is_array( $form['notifications'] ) ) {
-			foreach ( $form['notifications'] as $notification ) {
-				mfw_audit_push_row(
-					$rows,
-					mfw_audit_build_row(
-						array(
-							'environment_name' => $metadata['environment_name'],
-							'site_id'          => $metadata['site_id'],
-							'record_type'      => 'gravity_notification',
-							'object_type'      => 'gravity_notification',
-							'object_id'        => $form_id . ':' . md5( maybe_serialize( $notification ) ),
-							'status'           => ! empty( $notification['isActive'] ) ? 'active' : 'inactive',
-							'title'            => isset( $notification['name'] ) ? $notification['name'] : '',
-							'plugin'           => 'gravity_forms',
-							'details_json'     => mfw_audit_json_encode( $notification ),
-						)
-					)
-				);
-			}
-		}
-
-		if ( ! empty( $form['confirmations'] ) && is_array( $form['confirmations'] ) ) {
-			foreach ( $form['confirmations'] as $confirmation ) {
-				mfw_audit_push_row(
-					$rows,
-					mfw_audit_build_row(
-						array(
-							'environment_name' => $metadata['environment_name'],
-							'site_id'          => $metadata['site_id'],
-							'record_type'      => 'gravity_confirmation',
-							'object_type'      => 'gravity_confirmation',
-							'object_id'        => $form_id . ':' . md5( maybe_serialize( $confirmation ) ),
-							'status'           => ! empty( $confirmation['isDefault'] ) ? 'active' : 'inactive',
-							'title'            => isset( $confirmation['name'] ) ? $confirmation['name'] : '',
-							'plugin'           => 'gravity_forms',
-							'details_json'     => mfw_audit_json_encode( $confirmation ),
-						)
-					)
-				);
-			}
-		}
-	}
-}
-
-/**
- * Collect SEO rows.
- *
- * @param array<int, array<string, string>> $rows         Row collection.
- * @param array<string, mixed>             $metadata     Metadata reference.
- * @param array<int, WP_Post>              $content_posts Content post cache.
- *
- * @return void
- */
-function mfw_audit_collect_seo_rows( &$rows, &$metadata, $content_posts ) {
-	$detected = mfw_get_detected_audit_plugins();
-	$yoast_on  = isset( $detected['yoast_seo'] );
-	$rank_on   = isset( $detected['rank_math'] );
-
-	if ( ! $yoast_on && ! $rank_on ) {
-		return;
-	}
-
-	foreach ( $content_posts as $post ) {
-		$post_meta = get_post_meta( $post->ID );
-
-		if ( $yoast_on ) {
-			$yoast_meta = array();
-
-			foreach ( $post_meta as $meta_key => $meta_values ) {
-				if ( 0 === strpos( $meta_key, '_yoast_wpseo_' ) || 0 === strpos( $meta_key, '_yoast_indexnow_' ) ) {
-					$yoast_meta[ $meta_key ] = $meta_values;
-				}
-			}
-
-			if ( ! empty( $yoast_meta ) ) {
-				mfw_audit_push_row(
-					$rows,
-					mfw_audit_build_row(
-						array(
-							'environment_name' => $metadata['environment_name'],
-							'site_id'          => $metadata['site_id'],
-							'record_type'      => 'seo',
-							'object_type'      => $post->post_type,
-							'object_id'        => $post->ID,
-							'status'           => $post->post_status,
-							'title'            => get_the_title( $post ),
-							'url'              => get_permalink( $post ),
-							'plugin'           => 'yoast_seo',
-							'details_json'     => mfw_audit_json_encode( array( 'meta' => $yoast_meta ) ),
-						)
-					)
-				);
-			}
-		}
-
-		if ( $rank_on ) {
-			$rank_meta = array();
-
-			foreach ( $post_meta as $meta_key => $meta_values ) {
-				if ( 0 === strpos( $meta_key, 'rank_math_' ) ) {
-					$rank_meta[ $meta_key ] = $meta_values;
-				}
-			}
-
-			if ( ! empty( $rank_meta ) ) {
-				mfw_audit_push_row(
-					$rows,
-					mfw_audit_build_row(
-						array(
-							'environment_name' => $metadata['environment_name'],
-							'site_id'          => $metadata['site_id'],
-							'record_type'      => 'seo',
-							'object_type'      => $post->post_type,
-							'object_id'        => $post->ID,
-							'status'           => $post->post_status,
-							'title'            => get_the_title( $post ),
-							'url'              => get_permalink( $post ),
-							'plugin'           => 'rank_math',
-							'details_json'     => mfw_audit_json_encode( array( 'meta' => $rank_meta ) ),
-						)
-					)
-				);
-			}
-		}
-	}
-}
-
-/**
- * Collect redirect rows.
- *
- * @param array<int, array<string, string>> $rows     Row collection.
- * @param array<string, mixed>             $metadata Metadata reference.
- *
- * @return void
- */
-function mfw_audit_collect_redirect_rows( &$rows, &$metadata ) {
-	if ( ! ( mfw_audit_is_plugin_active( 'redirection/redirection.php' ) || class_exists( 'Red_Item' ) ) ) {
-		return;
-	}
-
-	global $wpdb;
-
-	$items_table  = $wpdb->prefix . 'redirection_items';
-	$groups_table = $wpdb->prefix . 'redirection_groups';
-	$items_found  = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $items_table ) );
-
-	if ( empty( $items_found ) ) {
-		$metadata['warnings'][] = __( 'Redirection plugin detected, but its storage table was not found.', 'migration-freeze-webspark' );
-		return;
-	}
-
-	$group_map = array();
-	$groups_found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $groups_table ) );
-
-	if ( ! empty( $groups_found ) ) {
-		$groups = $wpdb->get_results( "SELECT id, name FROM {$groups_table}", ARRAY_A );
-
-		if ( is_array( $groups ) ) {
-			foreach ( $groups as $group ) {
-				$group_map[ (int) $group['id'] ] = $group['name'];
-			}
-		}
-	}
-
-	$items = $wpdb->get_results( "SELECT * FROM {$items_table} ORDER BY position ASC, id ASC", ARRAY_A );
-
-	if ( empty( $items ) || ! is_array( $items ) ) {
-		return;
-	}
-
-	foreach ( $items as $item ) {
-		$group_id   = isset( $item['group_id'] ) ? (int) $item['group_id'] : 0;
-		$group_name = isset( $group_map[ $group_id ] ) ? $group_map[ $group_id ] : '';
-		$enabled    = isset( $item['status'] ) ? (int) $item['status'] : 0;
-		$source_url = isset( $item['url'] ) ? $item['url'] : '';
-		$target_url = '';
-
-		if ( isset( $item['action_data'] ) ) {
-			$action_data = maybe_unserialize( $item['action_data'] );
-			if ( is_array( $action_data ) && isset( $action_data['url'] ) ) {
-				$target_url = $action_data['url'];
-			} elseif ( is_string( $action_data ) ) {
-				$target_url = $action_data;
-			}
-		}
-
-		mfw_audit_push_row(
-			$rows,
-			mfw_audit_build_row(
-				array(
-					'environment_name'    => $metadata['environment_name'],
-					'site_id'             => $metadata['site_id'],
-					'record_type'         => 'redirect',
-					'object_type'         => 'redirect',
-					'object_id'           => isset( $item['id'] ) ? $item['id'] : '',
-					'status'              => $enabled ? 'enabled' : 'disabled',
-					'title'               => $source_url,
-					'url'                 => $source_url,
-					'plugin'              => 'redirection',
-					'details_json'        => mfw_audit_json_encode(
-						array(
-							'source_url'  => $source_url,
-							'target_url'  => $target_url,
-							'action_type' => isset( $item['action_type'] ) ? $item['action_type'] : '',
-							'match_type'  => isset( $item['match_type'] ) ? $item['match_type'] : '',
-							'group_id'    => $group_id,
-							'group_name'  => $group_name,
-							'position'    => isset( $item['position'] ) ? $item['position'] : '',
-							'hits'        => isset( $item['hits'] ) ? $item['hits'] : '',
-							'regex'       => isset( $item['regex'] ) ? $item['regex'] : '',
-							'action_data' => isset( $item['action_data'] ) ? maybe_unserialize( $item['action_data'] ) : array(),
-						)
-					),
-				)
-			)
-		);
-	}
-}
-
-/**
- * Collect all audit rows.
+ * Build all export data.
  *
  * @return array<string, mixed>
  */
 function mfw_build_audit_export_dataset() {
 	$context       = mfw_audit_get_export_context();
-	$rows          = array();
+	$artifacts     = array();
 	$content_posts = array();
 
-	mfw_audit_collect_content_rows( $rows, $context, $content_posts );
-	mfw_audit_collect_taxonomy_term_rows( $rows, $context );
-	mfw_audit_collect_taxonomy_relationship_rows( $rows, $context, $content_posts );
-	mfw_audit_collect_media_rows( $rows, $context );
-	mfw_audit_collect_menu_rows( $rows, $context );
-	mfw_audit_collect_user_rows( $rows, $context );
-	mfw_audit_collect_gravity_forms_rows( $rows, $context );
-	mfw_audit_collect_seo_rows( $rows, $context, $content_posts );
-	mfw_audit_collect_redirect_rows( $rows, $context );
+	mfw_audit_collect_content_rows( $artifacts, $context, $content_posts );
+	mfw_audit_collect_taxonomy_term_rows( $artifacts, $context );
+	mfw_audit_collect_taxonomy_relationship_rows( $artifacts, $context, $content_posts );
+	mfw_audit_collect_media_rows( $artifacts, $context );
+	mfw_audit_collect_menu_rows( $artifacts, $context );
+	mfw_audit_collect_user_rows( $artifacts, $context );
 
 	$row_counts = array();
+	$files      = array();
 
-	foreach ( $rows as $row ) {
-		$type = isset( $row['record_type'] ) ? $row['record_type'] : 'unknown';
-
-		if ( ! isset( $row_counts[ $type ] ) ) {
-			$row_counts[ $type ] = 0;
-		}
-
-		$row_counts[ $type ]++;
+	foreach ( mfw_get_audit_artifacts() as $artifact_key => $definition ) {
+		$row_counts[ $artifact_key ] = isset( $artifacts[ $artifact_key ] ) ? count( $artifacts[ $artifact_key ] ) : 0;
 	}
 
 	$context['row_counts'] = $row_counts;
-	$context['row_total']  = count( $rows );
+	$context['row_total']   = array_sum( $row_counts );
+
+	$metadata = array(
+		'environment_name'        => $context['environment_name'],
+		'site_id'                 => $context['site_id'],
+		'site_name'               => $context['site_name'],
+		'site_url'                => $context['site_url'],
+		'generated_at'            => $context['generated_at'],
+		'generated_at_gmt'        => $context['generated_at_gmt'],
+		'generated_by'            => $context['generated_by'],
+		'detected_plugins'        => $context['detected_plugins'],
+		'detected_cpts'           => $context['detected_cpts'],
+		'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(),
+		'row_total'               => $context['row_total'],
+		'row_counts'              => $row_counts,
+		'warnings'                => $context['warnings'],
+		'files'                   => array(),
+	);
 
 	return array(
-		'context' => $context,
-		'rows'    => $rows,
+		'context'   => $context,
+		'artifacts' => $artifacts,
+		'metadata'  => $metadata,
 	);
 }
 
 /**
- * Write the CSV file.
+ * Write a CSV file.
  *
- * @param string $path CSV file path.
- * @param array<int, array<string,string>> $rows CSV rows.
+ * @param string                     $path CSV path.
+ * @param array<int, array<string,string>> $rows Rows.
+ * @param array<int, string>         $columns Columns.
  *
  * @return bool|WP_Error
  */
-function mfw_write_audit_csv( $path, $rows ) {
+function mfw_write_audit_csv( $path, $rows, $columns ) {
 	$handle = fopen( $path, 'w' );
 
 	if ( false === $handle ) {
 		return new WP_Error( 'mfw_audit_csv_open_failed', __( 'Could not open the CSV export for writing.', 'migration-freeze-webspark' ) );
 	}
 
-	fputcsv( $handle, mfw_get_audit_csv_columns() );
-
-	$columns = mfw_get_audit_csv_columns();
+	fputcsv( $handle, $columns );
 
 	foreach ( $rows as $row ) {
 		$ordered = array();
@@ -1192,9 +1021,9 @@ function mfw_write_audit_csv( $path, $rows ) {
 }
 
 /**
- * Write the JSON metadata file.
+ * Write the metadata JSON file.
  *
- * @param string $path JSON file path.
+ * @param string               $path JSON path.
  * @param array<string, mixed> $metadata Metadata payload.
  *
  * @return bool|WP_Error
@@ -1218,7 +1047,7 @@ function mfw_write_audit_json( $path, $metadata ) {
 /**
  * Create a ZIP archive if supported.
  *
- * @param string $zip_path Archive path.
+ * @param string                                  $zip_path Archive path.
  * @param array<int, array{name:string,path:string}> $files Files to add.
  *
  * @return bool
@@ -1244,7 +1073,7 @@ function mfw_create_audit_zip( $zip_path, $files ) {
 }
 
 /**
- * Generate the audit export files.
+ * Generate the audit export bundle.
  *
  * @return array<string, mixed>|WP_Error
  */
@@ -1252,88 +1081,83 @@ function mfw_generate_audit_export_bundle() {
 	$export_id = 'audit-' . get_current_blog_id() . '-' . gmdate( 'Ymd-His' );
 	$dataset   = mfw_build_audit_export_dataset();
 	$context   = $dataset['context'];
-	$rows      = $dataset['rows'];
+	$artifacts = $dataset['artifacts'];
+	$metadata  = $dataset['metadata'];
 	$storage   = mfw_audit_get_storage_paths( $export_id );
 
 	if ( is_wp_error( $storage ) ) {
 		return $storage;
 	}
 
-	$base_name = sanitize_file_name( $export_id );
-	$csv_name  = $base_name . '.csv';
-	$json_name  = $base_name . '.json';
-	$zip_name   = $base_name . '.zip';
-	$csv_path   = trailingslashit( $storage['dir'] ) . $csv_name;
-	$json_path  = trailingslashit( $storage['dir'] ) . $json_name;
-	$zip_path   = trailingslashit( $storage['dir'] ) . $zip_name;
-	$csv_url    = trailingslashit( $storage['url'] ) . rawurlencode( $csv_name );
-	$json_url   = trailingslashit( $storage['url'] ) . rawurlencode( $json_name );
-	$zip_url    = trailingslashit( $storage['url'] ) . rawurlencode( $zip_name );
-	$csv_result = mfw_write_audit_csv( $csv_path, $rows );
+	$bundle_files = array();
 
-	if ( is_wp_error( $csv_result ) ) {
-		return $csv_result;
+	foreach ( mfw_get_audit_artifacts() as $artifact_key => $definition ) {
+		if ( empty( $artifacts[ $artifact_key ] ) ) {
+			continue;
+		}
+
+		$file_name = $definition['filename'];
+		$file_path = trailingslashit( $storage['dir'] ) . $file_name;
+		$file_url  = trailingslashit( $storage['url'] ) . rawurlencode( $file_name );
+		$result    = mfw_write_audit_csv( $file_path, $artifacts[ $artifact_key ], $definition['columns'] );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$bundle_files[] = array(
+			'type' => $artifact_key,
+			'name' => $file_name,
+			'path' => $file_path,
+			'url'  => $file_url,
+			'size' => file_exists( $file_path ) ? filesize( $file_path ) : 0,
+			'rows' => isset( $context['row_counts'][ $artifact_key ] ) ? (int) $context['row_counts'][ $artifact_key ] : 0,
+		);
 	}
 
-	$metadata = array(
-		'environment_name'        => $context['environment_name'],
-		'site_id'                 => $context['site_id'],
-		'site_name'               => $context['site_name'],
-		'site_url'                => $context['site_url'],
-		'export_id'               => $export_id,
-		'generated_at'            => $context['generated_at'],
-		'generated_at_gmt'        => $context['generated_at_gmt'],
-		'generated_by'            => $context['generated_by'],
-		'detected_plugins'        => $context['detected_plugins'],
-		'detected_cpts'           => $context['detected_cpts'],
-		'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(),
-		'row_total'               => $context['row_total'],
-		'row_counts'              => $context['row_counts'],
-		'warnings'                => $context['warnings'],
-		'files'                   => array(),
-	);
+	$metadata_file_name = 'metadata.json';
+	$metadata_file_path  = trailingslashit( $storage['dir'] ) . $metadata_file_name;
+	$metadata_file_url   = trailingslashit( $storage['url'] ) . rawurlencode( $metadata_file_name );
+	$metadata['files']   = $bundle_files;
+	$metadata_result     = mfw_write_audit_json( $metadata_file_path, $metadata );
 
-	$json_result = mfw_write_audit_json( $json_path, $metadata );
-
-	if ( is_wp_error( $json_result ) ) {
-		return $json_result;
+	if ( is_wp_error( $metadata_result ) ) {
+		return $metadata_result;
 	}
 
-	$files = array(
-		array(
-			'type' => 'csv',
-			'name' => $csv_name,
-			'url'  => $csv_url,
-			'size' => file_exists( $csv_path ) ? filesize( $csv_path ) : 0,
-		),
-		array(
-			'type' => 'json',
-			'name' => $json_name,
-			'url'  => $json_url,
-			'size' => file_exists( $json_path ) ? filesize( $json_path ) : 0,
-		),
+	$bundle_files[] = array(
+		'type' => 'metadata',
+		'name' => $metadata_file_name,
+		'path' => $metadata_file_path,
+		'url'  => $metadata_file_url,
+		'size' => file_exists( $metadata_file_path ) ? filesize( $metadata_file_path ) : 0,
+		'rows' => 1,
 	);
 
-	$zip_created = mfw_create_audit_zip(
-		$zip_path,
-		array(
-			array(
-				'name' => $csv_name,
-				'path' => $csv_path,
-			),
-			array(
-				'name' => $json_name,
-				'path' => $json_path,
-			),
+	$zip_file_name = 'export.zip';
+	$zip_file_path = trailingslashit( $storage['dir'] ) . $zip_file_name;
+	$zip_file_url  = trailingslashit( $storage['url'] ) . rawurlencode( $zip_file_name );
+	$zip_created   = mfw_create_audit_zip(
+		$zip_file_path,
+		array_map(
+			static function ( $file ) {
+				return array(
+					'name' => $file['name'],
+					'path' => $file['path'],
+				);
+			},
+			$bundle_files
 		)
 	);
 
 	if ( $zip_created ) {
-		$files[] = array(
+		$bundle_files[] = array(
 			'type' => 'zip',
-			'name' => $zip_name,
-			'url'  => $zip_url,
-			'size' => file_exists( $zip_path ) ? filesize( $zip_path ) : 0,
+			'name' => $zip_file_name,
+			'path' => $zip_file_path,
+			'url'  => $zip_file_url,
+			'size' => file_exists( $zip_file_path ) ? filesize( $zip_file_path ) : 0,
+			'rows' => 0,
 		);
 	}
 
@@ -1348,15 +1172,14 @@ function mfw_generate_audit_export_bundle() {
 		'detected_cpts'           => $context['detected_cpts'],
 		'unexpected_content_types' => isset( $context['unexpected_content_types'] ) ? $context['unexpected_content_types'] : array(),
 		'warnings'                => $context['warnings'],
-		'files'                   => $files,
+		'files'                   => $bundle_files,
 	);
 
 	mfw_add_audit_history_record( $record );
 
 	return array(
-		'record'  => $record,
-		'files'   => $files,
-		'metadata'=> array_merge( $metadata, array( 'files' => $files ) ),
+		'record' => $record,
+		'files'  => $bundle_files,
 	);
 }
 
@@ -1381,8 +1204,7 @@ function mfw_handle_audit_export() {
 				'message' => $result->get_error_message(),
 			)
 		);
-	}
-	else {
+	} else {
 		mfw_set_audit_notice(
 			array(
 				'type'    => 'success',
@@ -1404,7 +1226,7 @@ function mfw_handle_audit_export() {
 }
 
 /**
- * Return the total rows for a record.
+ * Return the total rows for a history record.
  *
  * @param array<string, mixed> $record History record.
  *
@@ -1437,7 +1259,7 @@ function mfw_render_audit_trail_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Migration Audit Trail', 'migration-freeze-webspark' ); ?></h1>
-		<p><?php esc_html_e( 'Generate a comprehensive export of the site for migration audit, QA, and UAT reconciliation.', 'migration-freeze-webspark' ); ?></p>
+		<p><?php esc_html_e( 'Generate a comprehensive export bundle for migration audit, QA, and UAT reconciliation.', 'migration-freeze-webspark' ); ?></p>
 
 		<?php if ( ! empty( $notice ) ) : ?>
 			<div class="notice <?php echo esc_attr( 'error' === $notice['type'] ? 'notice-error' : 'notice-success' ); ?> is-dismissible">
