@@ -9,96 +9,109 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-function mfw_get_latest_gravity_forms_scope_count( $record = null ) {
-	if ( null === $record ) {
-		$history = mfw_get_audit_history();
-		$record  = ! empty( $history ) ? $history[0] : array();
+function mfw_fix_audit_history_summary_records( $history ) {
+	if ( ! is_array( $history ) ) {
+		return $history;
 	}
 
-	if ( empty( $record['files'] ) || ! is_array( $record['files'] ) ) {
-		return 0;
-	}
-
-	$gravity_file = '';
-	foreach ( $record['files'] as $file ) {
-		if ( ! empty( $file['type'] ) && 'gravity_forms' === $file['type'] && ! empty( $file['path'] ) ) {
-			$gravity_file = $file['path'];
-			break;
-		}
-	}
-
-	if ( '' === $gravity_file || ! is_readable( $gravity_file ) ) {
-		return 0;
-	}
-
-	$handle = fopen( $gravity_file, 'r' );
-	if ( false === $handle ) {
-		return 0;
-	}
-
-	$header = fgetcsv( $handle );
-	if ( false === $header || ! is_array( $header ) ) {
-		fclose( $handle );
-		return 0;
-	}
-
-	$record_type_index = array_search( 'record_type', $header, true );
-	if ( false === $record_type_index ) {
-		fclose( $handle );
-		return 0;
-	}
-
-	$count = 0;
-	$allowed = array( 'gravity_form', 'gravity_notification', 'gravity_confirmation' );
-
-	while ( false !== ( $row = fgetcsv( $handle ) ) ) {
-		if ( ! isset( $row[ $record_type_index ] ) ) {
+	foreach ( $history as &$record ) {
+		if ( ! is_array( $record ) ) {
 			continue;
 		}
-		if ( in_array( $row[ $record_type_index ], $allowed, true ) ) {
-			$count++;
-		}
+
+		$row_counts = isset( $record['row_counts'] ) && is_array( $record['row_counts'] ) ? $record['row_counts'] : array();
+		$content_rows = isset( $row_counts['content'] ) ? (int) $row_counts['content'] : 0;
+		$summary = isset( $record['summary'] ) && is_array( $record['summary'] ) ? $record['summary'] : array();
+		$draft_trash = isset( $summary['draft_trash_content'] ) ? (int) $summary['draft_trash_content'] : 0;
+		$published_like = max( 0, $content_rows - $draft_trash );
+
+		$summary['content_total'] = $content_rows;
+		$summary['published_like_content'] = $published_like;
+		$record['summary'] = $summary;
 	}
+	unset( $record );
 
-	fclose( $handle );
-	return $count;
+	return $history;
 }
+add_filter( 'option_mfw_audit_export_history', 'mfw_fix_audit_history_summary_records' );
 
-function mfw_render_audit_summary_gravity_forms_row() {
+function mfw_render_audit_summary_ui_fixes() {
 	if ( ! is_admin() || empty( $_GET['page'] ) || 'mfw-migration-audit-trail' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
 		return;
 	}
 
-	$count = mfw_get_latest_gravity_forms_scope_count();
+	$history = mfw_get_audit_history();
+	$latest  = ! empty( $history ) ? $history[0] : array();
+	$summary  = mfw_get_audit_record_summary( $latest );
+	$summary_json = wp_json_encode( $summary, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	?>
 	<script>
 	( function() {
-		const label = 'Gravity Forms (forms, notifications, confirmations)';
-		const value = <?php echo (int) $count; ?>;
+		const summary = <?php echo $summary_json ? $summary_json : '{}'; ?>;
+		const noteId = 'mfw-audit-summary-refresh-note';
+		const tableTitle = 'Content views';
+		const labels = {
+			contentTotal: 'Content total',
+			published: 'Published / Private / Future / Pending',
+			draftTrash: 'Drafts + Trash',
+			termPages: 'Taxonomy term archive pages',
+			taxonomyLanding: 'Taxonomy landing pages',
+			archivePages: 'General archive / index pages'
+		};
+		const refreshMessage = 'The displayed summary comes from the latest export record stored in history, not a separate live query outside the exporter flow. Generate another report to refresh the numbers.';
+
 		const table = Array.from( document.querySelectorAll( 'table.widefat.striped' ) ).find( (candidate) => {
 			const header = candidate.querySelector( 'thead th' );
-			return header && header.textContent.trim() === 'Content views';
+			return header && header.textContent.trim() === tableTitle;
 		} );
 
 		if ( ! table || ! table.tBodies.length ) {
 			return;
 		}
 
-		const tbody = table.tBodies[0];
-		const totalRow = Array.from( tbody.rows ).find( (row) => row.cells[0] && row.cells[0].textContent.trim() === 'Content views' );
-		if ( ! totalRow ) {
-			return;
-		}
+		const tbody = table.tBodies[ 0 ];
+		const rows = Array.from( tbody.rows );
+		const findRow = ( label ) => rows.find( (row) => row.cells[0] && row.cells[0].textContent.trim() === label );
+		const makeRow = ( label, value, options = {} ) => {
+			const row = document.createElement( 'tr' );
+			if ( options.bold ) {
+				row.style.fontWeight = '700';
+			}
+			if ( options.color ) {
+				row.style.color = options.color;
+			}
+			row.innerHTML = `<td>${label}</td><td>${value}</td>`;
+			return row;
+		};
 
-		if ( Array.from( tbody.rows ).some( (row) => row.cells[0] && row.cells[0].textContent.trim() === label ) ) {
-			return;
-		}
+		const contentTotalRow = findRow( labels.contentTotal ) || makeRow( labels.contentTotal, Number( summary.content_total || 0 ), { bold: true } );
+		const publishedRow = findRow( labels.published ) || makeRow( labels.published, Number( summary.published_like_content || 0 ) );
+		const draftTrashRow = findRow( labels.draftTrash ) || makeRow( labels.draftTrash, Number( summary.draft_trash_content || 0 ), { color: '#b32d2e' } );
+		const archiveRows = rows.filter( (row) => {
+			const label = row.cells[0] ? row.cells[0].textContent.trim() : '';
+			return ! [ labels.contentTotal, labels.published, labels.draftTrash ].includes( label );
+		} );
 
-		const row = document.createElement( 'tr' );
-		row.innerHTML = '<td>' + label + '</td><td>' + value + '</td>';
-		tbody.insertBefore( row, totalRow );
+		contentTotalRow.style.fontWeight = '700';
+		draftTrashRow.style.color = '#b32d2e';
+
+		tbody.innerHTML = '';
+		tbody.appendChild( contentTotalRow );
+		tbody.appendChild( publishedRow );
+		archiveRows.forEach( (row) => tbody.appendChild( row ) );
+		tbody.appendChild( draftTrashRow );
+
+		if ( ! document.getElementById( noteId ) ) {
+			const note = document.createElement( 'p' );
+			note.id = noteId;
+			note.className = 'description';
+			note.style.maxWidth = '900px';
+			note.style.marginTop = '0.75rem';
+			note.textContent = refreshMessage;
+			table.insertAdjacentElement( 'afterend', note );
+		}
 	}() );
 	</script>
 	<?php
 }
-add_action( 'admin_footer', 'mfw_render_audit_summary_gravity_forms_row' );
+add_action( 'admin_footer', 'mfw_render_audit_summary_ui_fixes' );
