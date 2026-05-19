@@ -117,6 +117,22 @@ function mfw_yoast_extract_site_settings() {
 	return $settings;
 }
 
+function mfw_yoast_path_to_url( $path ) {
+	$uploads = wp_upload_dir();
+	if ( empty( $uploads['basedir'] ) || empty( $uploads['baseurl'] ) ) {
+		return '';
+	}
+
+	$basedir = wp_normalize_path( $uploads['basedir'] );
+	$path    = wp_normalize_path( $path );
+	if ( 0 !== strpos( $path, $basedir ) ) {
+		return '';
+	}
+
+	$relative = ltrim( substr( $path, strlen( $basedir ) ), '/' );
+	return trailingslashit( $uploads['baseurl'] ) . str_replace( '%2F', '/', rawurlencode( $relative ) );
+}
+
 function mfw_yoast_build_row( $base, $overrides, $raw_meta, $source ) {
 	$row = array_merge(
 		array(
@@ -351,6 +367,7 @@ function mfw_yoast_ensure_export_support( $record ) {
 	}
 
 	$export_dir = '';
+	$export_url  = '';
 	foreach ( $record['files'] as $file ) {
 		if ( ! empty( $file['path'] ) ) {
 			$export_dir = dirname( $file['path'] );
@@ -361,11 +378,17 @@ function mfw_yoast_ensure_export_support( $record ) {
 		return $record;
 	}
 
-	$prefix = ! empty( $record['export_id'] ) ? $record['export_id'] : 'yoast-export';
+	$uploads = wp_upload_dir();
+	if ( ! empty( $uploads['baseurl'] ) ) {
+		$export_url = trailingslashit( $uploads['baseurl'] ) . basename( $export_dir );
+	}
+
+	$prefix   = ! empty( $record['export_id'] ) ? $record['export_id'] : 'yoast-export';
 	$csv_name = $prefix . '-seo.csv';
-	$csv_path = trailingslashit( $export_dir ) . $csv_name;
-	$columns = mfw_yoast_get_export_columns();
-	if ( true !== mfw_write_audit_csv( $csv_path, $rows, $columns ) ) {
+	$csv_path  = trailingslashit( $export_dir ) . $csv_name;
+	$columns   = mfw_yoast_get_export_columns();
+	$result    = mfw_write_audit_csv( $csv_path, $rows, $columns );
+	if ( true !== $result ) {
 		return $record;
 	}
 
@@ -373,14 +396,10 @@ function mfw_yoast_ensure_export_support( $record ) {
 		'type' => 'yoast_seo',
 		'name' => $csv_name,
 		'path' => $csv_path,
-		'url'  => '',
+		'url'  => '' !== $export_url ? trailingslashit( $export_url ) . rawurlencode( $csv_name ) : mfw_yoast_path_to_url( $csv_path ),
 		'size' => file_exists( $csv_path ) ? filesize( $csv_path ) : 0,
 		'rows' => count( $rows ),
 	);
-	$file_entry['url'] = trailingslashit( dirname( $record['files'][0]['url'] ?? '' ) );
-	if ( empty( $file_entry['url'] ) || false === strpos( $file_entry['url'], 'http' ) ) {
-		$file_entry['url'] = '';
-	}
 
 	$record['files'][] = $file_entry;
 	$record['row_counts']['yoast_seo'] = count( $rows );
@@ -414,7 +433,10 @@ function mfw_yoast_ensure_export_support( $record ) {
 		$zip = new ZipArchive();
 		if ( true === $zip->open( $zip_file_path, ZipArchive::CREATE | ZipArchive::OVERWRITE ) ) {
 			foreach ( $record['files'] as $file ) {
-				if ( ! empty( $file['path'] ) && file_exists( $file['path'] ) ) {
+				if ( empty( $file['path'] ) || $file['path'] === $zip_file_path ) {
+					continue;
+				}
+				if ( file_exists( $file['path'] ) ) {
 					$zip->addFile( $file['path'], $file['name'] );
 				}
 			}
