@@ -220,12 +220,14 @@ function mfw_yoast_build_row( $base, $overrides, $raw_meta, $source ) {
 		$overrides
 	);
 
-	$row['details_json'] = array_merge(
-		array(
-			'source'   => $source,
-			'raw_meta' => $raw_meta,
-		),
-		isset( $row['details_json'] ) && is_array( $row['details_json'] ) ? $row['details_json'] : array()
+	$row['details_json'] = mfw_audit_json_encode(
+		array_merge(
+			array(
+				'source'   => $source,
+				'raw_meta' => $raw_meta,
+			),
+			isset( $row['details_json'] ) && is_array( $row['details_json'] ) ? $row['details_json'] : array()
+		)
 	);
 
 	return $row;
