@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0] - 2026-05-15
+## [0.6.0] - 2026-05-19
+
+### Added
+
+- Gravity Forms audit trail support for form definitions, notifications, and confirmations.
+- Export of inactive Gravity Forms entries with an explicit inactive status flag.
+- Audit trail documentation updates for the new Gravity Forms scope.
+
+### Changed
+
+- Updated release metadata and version numbers to reflect the v0.6.0 milestone.
+- Kept existing migration workflow, content audit, and site-state behavior intact.
+
+## [0.5.0] - 2026-05-19
 
 ### Changed
 

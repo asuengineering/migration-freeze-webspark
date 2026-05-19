@@ -1,7 +1,7 @@
 {
   "name": "your-project",
   "description": "A WPGulp based project.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "repository": "ahmadawais/WPGulp",
   "license": "MIT"
 }

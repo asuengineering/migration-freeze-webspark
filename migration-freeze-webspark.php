@@ -7,7 +7,7 @@
  * Author URI:      https://comm.engineering.asu.edu
  * Text Domain:     migration-freeze-webspark
  * Domain Path:     /languages
- * Version:         0.5.0
+ * Version:         0.6.0
  *
  * @package         migration_freeze_webspark
  *
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'MFW_VERSION' ) ) {
-	define( 'MFW_VERSION', '0.5.0' );
+	define( 'MFW_VERSION', '0.6.0' );
 }
 
 if ( ! defined( 'MFW_PLUGIN_FILE' ) ) {
@@ -73,7 +73,6 @@ require_once MFW_PLUGIN_PATH . 'inc/my-sites.php';
 require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
 require_once MFW_PLUGIN_PATH . 'inc/settings.php';
 require_once MFW_PLUGIN_PATH . 'inc/audit-trail.php';
-require_once MFW_PLUGIN_PATH . 'inc/audit-summary-ui.php';
 
 function mfw_bootstrap() {
 	load_plugin_textdomain( 'migration-freeze-webspark', false, dirname( MFW_PLUGIN_BASENAME ) . '/languages' );

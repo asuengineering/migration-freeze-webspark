@@ -86,9 +86,16 @@ Settings → Migration Audit Trail
 
 Provides:
 
-- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, and users,
-- a history of recent exports,
+- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, and users,
+- recent export history,
 - and generated content-view summaries for audit planning.
+
+Gravity Forms exports currently capture:
+
+- forms and form settings relevant to Drupal/Webforms rebuilds,
+- per-form notifications,
+- per-form confirmations,
+- and inactive forms marked accordingly.
 
 ## My Sites Labels
 
@@ -123,7 +130,7 @@ develop
 Current milestone:
 
 ```text
-v0.5.0
+v0.6.0
 ```
 
 ---
