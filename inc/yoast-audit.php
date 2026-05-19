@@ -85,6 +85,41 @@ function mfw_yoast_normalize_bool( $value ) {
 	return '';
 }
 
+function mfw_yoast_has_meaningful_seo_data( $row ) {
+	$fields = array(
+		'seo_title',
+		'seo_description',
+		'seo_canonical',
+		'seo_focus_keyword',
+		'seo_og_title',
+		'seo_og_description',
+		'seo_og_image',
+		'seo_twitter_title',
+		'seo_twitter_description',
+		'seo_twitter_image',
+	);
+
+	foreach ( $fields as $field ) {
+		if ( ! empty( $row[ $field ] ) ) {
+			return true;
+		}
+	}
+
+	if ( isset( $row['seo_cornerstone'] ) && 'yes' === $row['seo_cornerstone'] ) {
+		return true;
+	}
+
+	if ( isset( $row['seo_noindex'] ) && 'yes' === $row['seo_noindex'] ) {
+		return true;
+	}
+
+	if ( isset( $row['seo_nofollow'] ) && 'yes' === $row['seo_nofollow'] ) {
+		return true;
+	}
+
+	return false;
+}
+
 function mfw_yoast_extract_post_meta( $post_id ) {
 	$raw_meta = get_post_meta( $post_id );
 	$filtered  = array();
@@ -154,32 +189,32 @@ function mfw_yoast_path_to_url( $path ) {
 function mfw_yoast_build_row( $base, $overrides, $raw_meta, $source ) {
 	$row = array_merge(
 		array(
-			'environment_name'      => '',
-			'site_id'               => '',
-			'record_type'           => '',
-			'object_type'           => '',
-			'object_id'             => '',
-			'status'                => '',
-			'title'                 => '',
-			'url'                   => '',
-			'slug'                  => '',
-			'taxonomy'              => '',
-			'term_id'               => '',
-			'seo_title'             => '',
-			'seo_description'       => '',
-			'seo_canonical'         => '',
-			'seo_noindex'           => '',
-			'seo_nofollow'          => '',
-			'seo_focus_keyword'     => '',
-			'seo_cornerstone'       => '',
-			'seo_og_title'          => '',
-			'seo_og_description'    => '',
-			'seo_og_image'          => '',
-			'seo_twitter_title'     => '',
+			'environment_name'       => '',
+			'site_id'                => '',
+			'record_type'            => '',
+			'object_type'            => '',
+			'object_id'              => '',
+			'status'                 => '',
+			'title'                  => '',
+			'url'                    => '',
+			'slug'                   => '',
+			'taxonomy'               => '',
+			'term_id'                => '',
+			'seo_title'              => '',
+			'seo_description'        => '',
+			'seo_canonical'          => '',
+			'seo_noindex'            => '',
+			'seo_nofollow'           => '',
+			'seo_focus_keyword'      => '',
+			'seo_cornerstone'        => '',
+			'seo_og_title'           => '',
+			'seo_og_description'     => '',
+			'seo_og_image'           => '',
+			'seo_twitter_title'      => '',
 			'seo_twitter_description' => '',
-			'seo_twitter_image'     => '',
-			'source'                => $source,
-			'details_json'          => array(),
+			'seo_twitter_image'      => '',
+			'source'                 => $source,
+			'details_json'           => array(),
 		),
 		$base,
 		$overrides
@@ -228,7 +263,7 @@ function mfw_yoast_collect_post_rows( $context ) {
 				continue;
 			}
 
-			$rows[] = mfw_yoast_build_row(
+			$row = mfw_yoast_build_row(
 				array(
 					'environment_name' => $context['environment_name'],
 					'site_id'          => $context['site_id'],
@@ -241,20 +276,20 @@ function mfw_yoast_collect_post_rows( $context ) {
 					'slug'             => $post->post_name,
 				),
 				array(
-					'seo_title'             => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_title' ) ),
-					'seo_description'       => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_metadesc' ) ),
-					'seo_canonical'         => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_canonical' ) ),
-					'seo_noindex'           => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_meta-robots-noindex', '_yoast_wpseo_meta-robots-noindex-wpseo' ) ),
-					'seo_nofollow'          => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_meta-robots-nofollow' ) ),
-					'seo_focus_keyword'     => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_focuskw' ) ),
-					'seo_cornerstone'       => mfw_yoast_normalize_bool( mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_is_cornerstone' ) ) ),
-					'seo_og_title'          => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_opengraph-title' ) ),
-					'seo_og_description'    => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_opengraph-description' ) ),
-					'seo_og_image'          => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_opengraph-image' ) ),
-					'seo_twitter_title'     => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_twitter-title' ) ),
+					'seo_title'              => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_title' ) ),
+					'seo_description'        => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_metadesc' ) ),
+					'seo_canonical'          => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_canonical' ) ),
+					'seo_noindex'            => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_meta-robots-noindex', '_yoast_wpseo_meta-robots-noindex-wpseo' ) ),
+					'seo_nofollow'           => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_meta-robots-nofollow' ) ),
+					'seo_focus_keyword'      => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_focuskw' ) ),
+					'seo_cornerstone'        => mfw_yoast_normalize_bool( mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_is_cornerstone' ) ) ),
+					'seo_og_title'           => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_opengraph-title' ) ),
+					'seo_og_description'     => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_opengraph-description' ) ),
+					'seo_og_image'           => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_opengraph-image' ) ),
+					'seo_twitter_title'      => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_twitter-title' ) ),
 					'seo_twitter_description' => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_twitter-description' ) ),
-					'seo_twitter_image'     => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_twitter-image' ) ),
-					'details_json'          => array(
+					'seo_twitter_image'      => mfw_yoast_get_meta_value( $raw_meta, array( '_yoast_wpseo_twitter-image' ) ),
+					'details_json'           => array(
 						'post_type' => $post_type,
 						'meta_keys'  => array_keys( $raw_meta ),
 					),
@@ -262,6 +297,12 @@ function mfw_yoast_collect_post_rows( $context ) {
 				$raw_meta,
 				'post_meta'
 			);
+
+			if ( ! mfw_yoast_has_meaningful_seo_data( $row ) ) {
+				continue;
+			}
+
+			$rows[] = $row;
 		}
 	}
 
@@ -303,7 +344,7 @@ function mfw_yoast_collect_taxonomy_rows( $context ) {
 				$term_url = '';
 			}
 
-			$rows[] = mfw_yoast_build_row(
+			$row = mfw_yoast_build_row(
 				array(
 					'environment_name' => $context['environment_name'],
 					'site_id'          => $context['site_id'],
@@ -318,20 +359,20 @@ function mfw_yoast_collect_taxonomy_rows( $context ) {
 					'term_id'          => $term->term_id,
 				),
 				array(
-					'seo_title'             => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_title', '_yoast_wpseo_title' ) ),
-					'seo_description'       => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_desc', '_yoast_wpseo_metadesc' ) ),
-					'seo_canonical'         => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_canonical', '_yoast_wpseo_canonical' ) ),
-					'seo_noindex'           => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_noindex', '_yoast_wpseo_meta-robots-noindex' ) ),
-					'seo_nofollow'          => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_nofollow', '_yoast_wpseo_meta-robots-nofollow' ) ),
-					'seo_focus_keyword'     => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_focuskw', '_yoast_wpseo_focuskw' ) ),
-					'seo_cornerstone'       => mfw_yoast_normalize_bool( mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_is_cornerstone', '_yoast_wpseo_is_cornerstone' ) ) ),
-					'seo_og_title'          => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_opengraph-title', '_yoast_wpseo_opengraph-title' ) ),
-					'seo_og_description'    => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_opengraph-description', '_yoast_wpseo_opengraph-description' ) ),
-					'seo_og_image'          => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_opengraph-image', '_yoast_wpseo_opengraph-image' ) ),
-					'seo_twitter_title'     => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_twitter-title', '_yoast_wpseo_twitter-title' ) ),
+					'seo_title'              => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_title', '_yoast_wpseo_title' ) ),
+					'seo_description'        => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_desc', '_yoast_wpseo_metadesc' ) ),
+					'seo_canonical'          => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_canonical', '_yoast_wpseo_canonical' ) ),
+					'seo_noindex'            => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_noindex', '_yoast_wpseo_meta-robots-noindex' ) ),
+					'seo_nofollow'           => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_nofollow', '_yoast_wpseo_meta-robots-nofollow' ) ),
+					'seo_focus_keyword'      => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_focuskw', '_yoast_wpseo_focuskw' ) ),
+					'seo_cornerstone'        => mfw_yoast_normalize_bool( mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_is_cornerstone', '_yoast_wpseo_is_cornerstone' ) ) ),
+					'seo_og_title'           => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_opengraph-title', '_yoast_wpseo_opengraph-title' ) ),
+					'seo_og_description'     => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_opengraph-description', '_yoast_wpseo_opengraph-description' ) ),
+					'seo_og_image'           => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_opengraph-image', '_yoast_wpseo_opengraph-image' ) ),
+					'seo_twitter_title'      => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_twitter-title', '_yoast_wpseo_twitter-title' ) ),
 					'seo_twitter_description' => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_twitter-description', '_yoast_wpseo_twitter-description' ) ),
-					'seo_twitter_image'     => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_twitter-image', '_yoast_wpseo_twitter-image' ) ),
-					'details_json'          => array(
+					'seo_twitter_image'      => mfw_yoast_get_meta_value( $raw_meta, array( 'wpseo_twitter-image', '_yoast_wpseo_twitter-image' ) ),
+					'details_json'           => array(
 						'taxonomy' => $taxonomy,
 						'term_name' => $term->name,
 						'meta_keys' => array_keys( $raw_meta ),
@@ -340,6 +381,12 @@ function mfw_yoast_collect_taxonomy_rows( $context ) {
 				$raw_meta,
 				'term_meta'
 			);
+
+			if ( ! mfw_yoast_has_meaningful_seo_data( $row ) ) {
+				continue;
+			}
+
+			$rows[] = $row;
 		}
 	}
 
@@ -413,7 +460,6 @@ function mfw_yoast_ensure_export_support( $record ) {
 	}
 
 	$export_dir = '';
-	$export_url = '';
 	foreach ( $record['files'] as $file ) {
 		if ( ! empty( $file['path'] ) ) {
 			$export_dir = dirname( $file['path'] );
@@ -422,11 +468,6 @@ function mfw_yoast_ensure_export_support( $record ) {
 	}
 	if ( '' === $export_dir ) {
 		return $record;
-	}
-
-	$uploads = wp_upload_dir();
-	if ( ! empty( $uploads['baseurl'] ) ) {
-		$export_url = trailingslashit( $uploads['baseurl'] ) . basename( $export_dir );
 	}
 
 	$prefix   = ! empty( $record['export_id'] ) ? $record['export_id'] : 'yoast-export';
@@ -442,7 +483,7 @@ function mfw_yoast_ensure_export_support( $record ) {
 		'type' => 'yoast_seo',
 		'name' => $csv_name,
 		'path' => $csv_path,
-		'url'  => '' !== $export_url ? trailingslashit( $export_url ) . rawurlencode( $csv_name ) : mfw_yoast_path_to_url( $csv_path ),
+		'url'  => mfw_yoast_path_to_url( $csv_path ),
 		'size' => file_exists( $csv_path ) ? filesize( $csv_path ) : 0,
 		'rows' => count( $rows ),
 	);
