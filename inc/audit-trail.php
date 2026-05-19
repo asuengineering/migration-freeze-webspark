@@ -77,34 +77,34 @@ function mfw_get_detected_audit_plugins() {
 	$plugins = array();
 	if ( mfw_audit_is_plugin_active( 'gravityforms/gravityforms.php' ) || class_exists( 'GFAPI' ) ) {
 		$plugins['gravity_forms'] = array(
-			'label'   => 'Gravity Forms',
-			'purpose'  => 'forms',
-			'file'     => 'gravityforms/gravityforms.php',
-			'active'   => true,
+			'label'  => 'Gravity Forms',
+			'purpose' => 'forms',
+			'file'   => 'gravityforms/gravityforms.php',
+			'active'  => true,
 		);
 	}
 	if ( mfw_audit_is_plugin_active( 'wordpress-seo/wp-seo.php' ) || defined( 'WPSEO_VERSION' ) ) {
 		$plugins['yoast_seo'] = array(
-			'label'   => 'Yoast SEO',
-			'purpose'  => 'seo',
-			'file'     => 'wordpress-seo/wp-seo.php',
-			'active'   => true,
+			'label'  => 'Yoast SEO',
+			'purpose' => 'seo',
+			'file'   => 'wordpress-seo/wp-seo.php',
+			'active'  => true,
 		);
 	}
 	if ( mfw_audit_is_plugin_active( 'seo-by-rank-math/rank-math.php' ) || defined( 'RANK_MATH_VERSION' ) ) {
 		$plugins['rank_math'] = array(
-			'label'   => 'Rank Math',
-			'purpose'  => 'seo',
-			'file'     => 'seo-by-rank-math/rank-math.php',
-			'active'   => true,
+			'label'  => 'Rank Math',
+			'purpose' => 'seo',
+			'file'   => 'seo-by-rank-math/rank-math.php',
+			'active'  => true,
 		);
 	}
 	if ( mfw_audit_is_plugin_active( 'redirection/redirection.php' ) || class_exists( 'Red_Item' ) ) {
 		$plugins['redirection'] = array(
-			'label'   => 'Redirection',
-			'purpose'  => 'redirects',
-			'file'     => 'redirection/redirection.php',
-			'active'   => true,
+			'label'  => 'Redirection',
+			'purpose' => 'redirects',
+			'file'   => 'redirection/redirection.php',
+			'active'  => true,
 		);
 	}
 	return $plugins;
@@ -142,20 +142,28 @@ function mfw_get_audit_artifacts() {
 			'filename' => 'users.csv',
 			'columns' => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'title', 'role', 'registered_at', 'details_json' ),
 		),
-		'gravity_form' => array(
+		'gravity_forms' => array(
 			'label'   => 'Gravity Forms',
 			'filename' => 'gravity-forms.csv',
-			'columns' => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'status', 'title', 'url', 'plugin', 'details_json' ),
-		),
-		'gravity_notification' => array(
-			'label'   => 'Gravity Notifications',
-			'filename' => 'gravity-notifications.csv',
-			'columns' => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'status', 'title', 'url', 'plugin', 'details_json' ),
-		),
-		'gravity_confirmation' => array(
-			'label'   => 'Gravity Confirmations',
-			'filename' => 'gravity-confirmations.csv',
-			'columns' => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'status', 'title', 'url', 'plugin', 'details_json' ),
+			'columns' => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'form_id',
+				'status',
+				'title',
+				'description',
+				'url',
+				'field_id',
+				'field_type',
+				'field_label',
+				'has_conditional_logic',
+				'notification_name',
+				'confirmation_name',
+				'details_json',
+			),
 		),
 	);
 }
@@ -199,7 +207,7 @@ function mfw_audit_get_content_types( &$metadata ) {
 	}
 	$types = array_values( array_unique( $types ) );
 	sort( $types );
-	$expected = array( 'post', 'page', 'project' );
+	$expected   = array( 'post', 'page', 'project' );
 	$unexpected = array_values( array_diff( $types, $expected ) );
 	$metadata['unexpected_content_types'] = $unexpected;
 	if ( ! empty( $unexpected ) ) {
@@ -293,7 +301,7 @@ function mfw_audit_collect_content_rows( &$artifacts, &$metadata, &$content_post
 						'post_status'      => $post->post_status,
 						'post_parent'      => $post->post_parent,
 						'post_date_gmt'    => $post->post_date_gmt,
-						'post_modified_gmt'=> $post->post_modified_gmt,
+						'post_modified_gmt' => $post->post_modified_gmt,
 						'comment_status'   => $post->comment_status,
 						'ping_status'      => $post->ping_status,
 					),
@@ -337,7 +345,7 @@ function mfw_audit_collect_taxonomy_term_rows( &$artifacts, &$metadata ) {
 					'details_json'     => array(
 						'description' => $term->description,
 						'count'       => $term->count,
-						'archive_url'  => $archive_url,
+						'archive_url' => $archive_url,
 					),
 				)
 			);
@@ -361,20 +369,20 @@ function mfw_audit_collect_taxonomy_relationship_rows( &$artifacts, &$metadata, 
 					$artifacts,
 					'taxonomy_relationship',
 					array(
-						'environment_name' => $metadata['environment_name'],
-						'site_id'          => $metadata['site_id'],
-						'record_type'      => 'taxonomy_relationship',
-						'object_type'      => $post->post_type,
-						'object_id'        => $term->term_id,
-						'title'            => get_the_title( $post ),
-						'url'              => get_permalink( $post ),
-						'taxonomy'         => $taxonomy,
-						'term_id'          => $term->term_id,
-						'term_name'        => $term->name,
-						'term_slug'        => $term->slug,
-						'related_object_id'=> $post->ID,
-						'related_object_type' => $post->post_type,
-						'details_json'     => array(
+						'environment_name'    => $metadata['environment_name'],
+						'site_id'             => $metadata['site_id'],
+						'record_type'         => 'taxonomy_relationship',
+						'object_type'         => $post->post_type,
+						'object_id'           => $term->term_id,
+						'title'               => get_the_title( $post ),
+						'url'                 => get_permalink( $post ),
+						'taxonomy'            => $taxonomy,
+						'term_id'             => $term->term_id,
+						'term_name'           => $term->name,
+						'term_slug'           => $term->slug,
+						'related_object_id'   => $post->ID,
+						'related_object_type'  => $post->post_type,
+						'details_json'        => array(
 							'related_title' => get_the_title( $post ),
 							'related_url'   => get_permalink( $post ),
 						),
@@ -455,20 +463,20 @@ function mfw_audit_collect_menu_item_rows( &$artifacts, &$metadata ) {
 				$artifacts,
 				'menu_item',
 				array(
-					'environment_name' => $metadata['environment_name'],
-					'site_id'          => $metadata['site_id'],
-					'record_type'      => 'menu_item',
-					'object_type'      => 'menu_item',
-					'object_id'        => $menu_item->ID,
-					'title'            => $menu_item->title,
-					'url'              => $menu_item->url,
-					'parent_id'        => $menu_item->menu_item_parent,
-					'related_object_id'=> $related_object_id,
+					'environment_name'  => $metadata['environment_name'],
+					'site_id'           => $metadata['site_id'],
+					'record_type'       => 'menu_item',
+					'object_type'       => 'menu_item',
+					'object_id'         => $menu_item->ID,
+					'title'             => $menu_item->title,
+					'url'               => $menu_item->url,
+					'parent_id'         => $menu_item->menu_item_parent,
+					'related_object_id' => $related_object_id,
 					'related_object_type' => $related_object_type,
-					'menu_name'        => $menu->name,
-					'menu_slug'        => $menu->slug,
-					'menu_location'    => implode( ',', $menu_locations ),
-					'details_json'     => array(
+					'menu_name'         => $menu->name,
+					'menu_slug'         => $menu->slug,
+					'menu_location'     => implode( ',', $menu_locations ),
+					'details_json'      => array(
 						'menu_order'  => $menu_item->menu_order,
 						'target'      => $menu_item->target,
 						'xfn'         => $menu_item->xfn,
@@ -520,24 +528,73 @@ function mfw_audit_is_gravity_forms_available() {
 	return class_exists( 'GFAPI' );
 }
 
-function mfw_audit_summarize_gf_fields( $fields ) {
-	$summary = array();
-	if ( ! is_array( $fields ) ) {
-		return $summary;
-	}
-	foreach ( $fields as $field ) {
-		if ( ! is_array( $field ) ) {
-			continue;
+function mfw_audit_get_gf_form_status( $form ) {
+	return ! empty( $form['is_active'] ) ? 'active' : 'inactive';
+}
+
+function mfw_audit_gf_field_has_conditional_logic( $field ) {
+	if ( is_object( $field ) ) {
+		if ( ! empty( $field->conditionalLogic ) ) {
+			return true;
 		}
-		$summary[] = array(
-			'id'         => isset( $field['id'] ) ? $field['id'] : '',
-			'type'       => isset( $field['type'] ) ? $field['type'] : '',
-			'label'      => isset( $field['label'] ) ? $field['label'] : '',
-			'adminLabel' => isset( $field['adminLabel'] ) ? $field['adminLabel'] : '',
-			'required'   => ! empty( $field['isRequired'] ),
-		);
+		if ( ! empty( $field->conditional_logic ) ) {
+			return true;
+		}
+		return false;
 	}
-	return $summary;
+
+	if ( is_array( $field ) ) {
+		return ! empty( $field['conditionalLogic'] ) || ! empty( $field['conditional_logic'] );
+	}
+
+	return false;
+}
+
+function mfw_audit_summarize_gf_field( $field ) {
+	$label = '';
+	if ( is_object( $field ) ) {
+		$label = isset( $field->label ) ? $field->label : '';
+	} elseif ( is_array( $field ) ) {
+		$label = isset( $field['label'] ) ? $field['label'] : '';
+	}
+
+	return array(
+		'id'                   => is_object( $field ) && isset( $field->id ) ? $field->id : ( is_array( $field ) && isset( $field['id'] ) ? $field['id'] : '' ),
+		'type'                 => is_object( $field ) && isset( $field->type ) ? $field->type : ( is_array( $field ) && isset( $field['type'] ) ? $field['type'] : '' ),
+		'label'                => $label,
+		'adminLabel'           => is_object( $field ) && isset( $field->adminLabel ) ? $field->adminLabel : ( is_array( $field ) && isset( $field['adminLabel'] ) ? $field['adminLabel'] : '' ),
+		'isRequired'           => is_object( $field ) && isset( $field->isRequired ) ? (bool) $field->isRequired : ( is_array( $field ) && ! empty( $field['isRequired'] ) ),
+		'hasConditionalLogic'  => mfw_audit_gf_field_has_conditional_logic( $field ),
+	);
+}
+
+function mfw_audit_summarize_gf_notification( $notification ) {
+	return array(
+		'name'             => isset( $notification['name'] ) ? $notification['name'] : '',
+		'isActive'         => isset( $notification['isActive'] ) ? (bool) $notification['isActive'] : false,
+		'event'            => isset( $notification['event'] ) ? $notification['event'] : '',
+		'to'               => isset( $notification['to'] ) ? $notification['to'] : '',
+		'subject'          => isset( $notification['subject'] ) ? $notification['subject'] : '',
+		'message'          => isset( $notification['message'] ) ? $notification['message'] : '',
+		'from'             => isset( $notification['from'] ) ? $notification['from'] : '',
+		'replyTo'          => isset( $notification['replyTo'] ) ? $notification['replyTo'] : '',
+		'cc'               => isset( $notification['cc'] ) ? $notification['cc'] : '',
+		'bcc'              => isset( $notification['bcc'] ) ? $notification['bcc'] : '',
+		'conditionalLogic' => isset( $notification['conditionalLogic'] ) ? $notification['conditionalLogic'] : array(),
+	);
+}
+
+function mfw_audit_summarize_gf_confirmation( $confirmation ) {
+	return array(
+		'name'             => isset( $confirmation['name'] ) ? $confirmation['name'] : '',
+		'type'             => isset( $confirmation['type'] ) ? $confirmation['type'] : '',
+		'message'          => isset( $confirmation['message'] ) ? $confirmation['message'] : '',
+		'url'              => isset( $confirmation['url'] ) ? $confirmation['url'] : '',
+		'pageId'           => isset( $confirmation['pageId'] ) ? $confirmation['pageId'] : '',
+		'queryString'      => isset( $confirmation['queryString'] ) ? $confirmation['queryString'] : '',
+		'isDefault'        => ! empty( $confirmation['isDefault'] ),
+		'conditionalLogic' => isset( $confirmation['conditionalLogic'] ) ? $confirmation['conditionalLogic'] : array(),
+	);
 }
 
 function mfw_audit_collect_gravity_forms_rows( &$artifacts, &$metadata ) {
@@ -562,99 +619,139 @@ function mfw_audit_collect_gravity_forms_rows( &$artifacts, &$metadata ) {
 			continue;
 		}
 
-		$is_active = ! empty( $form['is_active'] );
-		$form_url  = admin_url( 'admin.php?page=gf_edit_forms&id=' . $form_id );
+		$form_status = mfw_audit_get_gf_form_status( $form );
+		$form_url     = admin_url( 'admin.php?page=gf_edit_forms&id=' . $form_id );
+		$fields       = isset( $form['fields'] ) && is_array( $form['fields'] ) ? $form['fields'] : array();
 		$notifications = isset( $form['notifications'] ) && is_array( $form['notifications'] ) ? $form['notifications'] : array();
 		$confirmations  = isset( $form['confirmations'] ) && is_array( $form['confirmations'] ) ? $form['confirmations'] : array();
 
 		mfw_audit_push_row(
 			$artifacts,
-			'gravity_form',
+			'gravity_forms',
 			array(
 				'environment_name' => $metadata['environment_name'],
 				'site_id'          => $metadata['site_id'],
 				'record_type'      => 'gravity_form',
 				'object_type'      => 'gravity_form',
 				'object_id'        => $form_id,
-				'status'           => $is_active ? 'active' : 'inactive',
+				'form_id'          => $form_id,
+				'status'           => $form_status,
 				'title'            => isset( $form['title'] ) ? $form['title'] : '',
+				'description'      => isset( $form['description'] ) ? wp_strip_all_tags( (string) $form['description'] ) : '',
 				'url'              => $form_url,
-				'plugin'           => 'Gravity Forms',
+				'field_id'         => '',
+				'field_type'       => '',
+				'field_label'      => '',
+				'has_conditional_logic' => '',
+				'notification_name' => '',
+				'confirmation_name' => '',
 				'details_json'     => array(
-					'description'            => isset( $form['description'] ) ? $form['description'] : '',
-					'labelPlacement'         => isset( $form['labelPlacement'] ) ? $form['labelPlacement'] : '',
-					'descriptionPlacement'   => isset( $form['descriptionPlacement'] ) ? $form['descriptionPlacement'] : '',
-					'button'                 => isset( $form['button'] ) ? $form['button'] : array(),
-					'cssClass'               => isset( $form['cssClass'] ) ? $form['cssClass'] : '',
-					'is_active'              => $is_active,
-					'fields'                 => mfw_audit_summarize_gf_fields( isset( $form['fields'] ) ? $form['fields'] : array() ),
-					'notifications_count'    => count( $notifications ),
-					'confirmations_count'    => count( $confirmations ),
+					'button'              => isset( $form['button'] ) ? $form['button'] : array(),
+					'labelPlacement'      => isset( $form['labelPlacement'] ) ? $form['labelPlacement'] : '',
+					'descriptionPlacement' => isset( $form['descriptionPlacement'] ) ? $form['descriptionPlacement'] : '',
+					'cssClass'            => isset( $form['cssClass'] ) ? $form['cssClass'] : '',
+					'is_active'           => ! empty( $form['is_active'] ),
+					'fields'              => array_map( 'mfw_audit_summarize_gf_field', $fields ),
+					'notifications_count'  => count( $notifications ),
+					'confirmations_count'  => count( $confirmations ),
 				),
 			)
 		);
 
-		foreach ( $notifications as $notification_key => $notification ) {
-			$notification_id = $form_id . ':' . $notification_key;
-			$enabled = ! empty( $notification['isActive'] );
+		foreach ( $fields as $field ) {
+			$field_id    = is_object( $field ) && isset( $field->id ) ? $field->id : ( is_array( $field ) && isset( $field['id'] ) ? $field['id'] : '' );
+			$field_type  = is_object( $field ) && isset( $field->type ) ? $field->type : ( is_array( $field ) && isset( $field['type'] ) ? $field['type'] : '' );
+			$field_label = is_object( $field ) && isset( $field->label ) ? $field->label : ( is_array( $field ) && isset( $field['label'] ) ? $field['label'] : '' );
+			$has_logic   = mfw_audit_gf_field_has_conditional_logic( $field ) ? 'yes' : 'no';
+
 			mfw_audit_push_row(
 				$artifacts,
-				'gravity_notification',
+				'gravity_forms',
 				array(
 					'environment_name' => $metadata['environment_name'],
 					'site_id'          => $metadata['site_id'],
-					'record_type'      => 'gravity_notification',
-					'object_type'      => 'gravity_notification',
-					'object_id'        => $notification_id,
-					'status'           => $enabled ? 'active' : 'inactive',
-					'title'            => isset( $notification['name'] ) ? $notification['name'] : $notification_key,
+					'record_type'      => 'gravity_field',
+					'object_type'      => 'gravity_field',
+					'object_id'        => $form_id . ':' . $field_id,
+					'form_id'          => $form_id,
+					'status'           => $form_status,
+					'title'            => $field_label,
+					'description'      => '',
 					'url'              => $form_url,
-					'plugin'           => 'Gravity Forms',
+					'field_id'         => $field_id,
+					'field_type'       => $field_type,
+					'field_label'      => $field_label,
+					'has_conditional_logic' => $has_logic,
+					'notification_name' => '',
+					'confirmation_name' => '',
 					'details_json'     => array(
-						'form_id'          => $form_id,
-						'notification_key'  => $notification_key,
-						'event'            => isset( $notification['event'] ) ? $notification['event'] : '',
-						'recipients'       => isset( $notification['to'] ) ? $notification['to'] : '',
-						'subject'          => isset( $notification['subject'] ) ? $notification['subject'] : '',
-						'message'          => isset( $notification['message'] ) ? $notification['message'] : '',
-						'from'             => isset( $notification['from'] ) ? $notification['from'] : '',
-						'replyTo'          => isset( $notification['replyTo'] ) ? $notification['replyTo'] : '',
-						'cc'               => isset( $notification['cc'] ) ? $notification['cc'] : '',
-						'bcc'              => isset( $notification['bcc'] ) ? $notification['bcc'] : '',
-						'isActive'         => $enabled,
-						'conditionalLogic' => isset( $notification['conditionalLogic'] ) ? $notification['conditionalLogic'] : array(),
+						'isRequired'           => is_object( $field ) && isset( $field->isRequired ) ? (bool) $field->isRequired : ( is_array( $field ) && ! empty( $field['isRequired'] ) ),
+						'adminLabel'           => is_object( $field ) && isset( $field->adminLabel ) ? $field->adminLabel : ( is_array( $field ) && isset( $field['adminLabel'] ) ? $field['adminLabel'] : '' ),
+						'visibility'           => is_object( $field ) && isset( $field->visibility ) ? $field->visibility : '',
+						'placeholder'          => is_object( $field ) && isset( $field->placeholder ) ? $field->placeholder : '',
+						'description'          => is_object( $field ) && isset( $field->description ) ? $field->description : '',
+						'choices'              => is_object( $field ) && isset( $field->choices ) ? $field->choices : ( is_array( $field ) && isset( $field['choices'] ) ? $field['choices'] : array() ),
+						'conditionalLogic'     => is_object( $field ) && isset( $field->conditionalLogic ) ? $field->conditionalLogic : ( is_array( $field ) && isset( $field['conditionalLogic'] ) ? $field['conditionalLogic'] : array() ),
+						'conditional_logic'    => is_object( $field ) && isset( $field->conditional_logic ) ? $field->conditional_logic : ( is_array( $field ) && isset( $field['conditional_logic'] ) ? $field['conditional_logic'] : array() ),
 					),
 				)
 			);
 		}
 
-		foreach ( $confirmations as $confirmation_key => $confirmation ) {
-			$confirmation_id = $form_id . ':' . $confirmation_key;
-			$status = ! empty( $confirmation['isDefault'] ) ? 'default' : ( isset( $confirmation['type'] ) ? $confirmation['type'] : 'custom' );
+		foreach ( $notifications as $notification_key => $notification ) {
+			$notification_name = isset( $notification['name'] ) ? $notification['name'] : $notification_key;
+			$enabled           = ! empty( $notification['isActive'] ) ? 'active' : 'inactive';
+
 			mfw_audit_push_row(
 				$artifacts,
-				'gravity_confirmation',
+				'gravity_forms',
+				array(
+					'environment_name' => $metadata['environment_name'],
+					'site_id'          => $metadata['site_id'],
+					'record_type'      => 'gravity_notification',
+					'object_type'      => 'gravity_notification',
+					'object_id'        => $form_id . ':' . $notification_key,
+					'form_id'          => $form_id,
+					'status'           => $enabled,
+					'title'            => $notification_name,
+					'description'      => '',
+					'url'              => $form_url,
+					'field_id'         => '',
+					'field_type'       => '',
+					'field_label'      => '',
+					'has_conditional_logic' => ! empty( $notification['conditionalLogic'] ) ? 'yes' : 'no',
+					'notification_name' => $notification_name,
+					'confirmation_name' => '',
+					'details_json'     => mfw_audit_summarize_gf_notification( $notification ),
+				)
+			);
+		}
+
+		foreach ( $confirmations as $confirmation_key => $confirmation ) {
+			$confirmation_name = isset( $confirmation['name'] ) ? $confirmation['name'] : $confirmation_key;
+			$confirmation_type = isset( $confirmation['type'] ) ? $confirmation['type'] : 'custom';
+
+			mfw_audit_push_row(
+				$artifacts,
+				'gravity_forms',
 				array(
 					'environment_name' => $metadata['environment_name'],
 					'site_id'          => $metadata['site_id'],
 					'record_type'      => 'gravity_confirmation',
 					'object_type'      => 'gravity_confirmation',
-					'object_id'        => $confirmation_id,
-					'status'           => $status,
-					'title'            => isset( $confirmation['name'] ) ? $confirmation['name'] : $confirmation_key,
+					'object_id'        => $form_id . ':' . $confirmation_key,
+					'form_id'          => $form_id,
+					'status'           => $confirmation_type,
+					'title'            => $confirmation_name,
+					'description'      => '',
 					'url'              => $form_url,
-					'plugin'           => 'Gravity Forms',
-					'details_json'     => array(
-						'form_id'          => $form_id,
-						'confirmation_key'  => $confirmation_key,
-						'type'             => isset( $confirmation['type'] ) ? $confirmation['type'] : '',
-						'message'          => isset( $confirmation['message'] ) ? $confirmation['message'] : '',
-						'pageId'           => isset( $confirmation['pageId'] ) ? $confirmation['pageId'] : '',
-						'queryString'      => isset( $confirmation['queryString'] ) ? $confirmation['queryString'] : '',
-						'url'              => isset( $confirmation['url'] ) ? $confirmation['url'] : '',
-						'conditionalLogic' => isset( $confirmation['conditionalLogic'] ) ? $confirmation['conditionalLogic'] : array(),
-						'isDefault'        => ! empty( $confirmation['isDefault'] ),
-					),
+					'field_id'         => '',
+					'field_type'       => '',
+					'field_label'      => '',
+					'has_conditional_logic' => ! empty( $confirmation['conditionalLogic'] ) ? 'yes' : 'no',
+					'notification_name' => '',
+					'confirmation_name' => $confirmation_name,
+					'details_json'     => mfw_audit_summarize_gf_confirmation( $confirmation ),
 				)
 			);
 		}
@@ -725,7 +822,7 @@ function mfw_build_audit_export_dataset() {
 	$context['row_total']   = array_sum( $row_counts );
 
 	$content_types   = ! empty( $context['detected_cpts'] ) ? $context['detected_cpts'] : mfw_audit_get_content_types( $context );
-	$published_like  = isset( $artifacts['content'] ) ? 0 : 0;
+	$published_like  = 0;
 	if ( isset( $artifacts['content'] ) ) {
 		foreach ( $artifacts['content'] as $row ) {
 			$status = isset( $row['status'] ) ? $row['status'] : '';
@@ -739,15 +836,15 @@ function mfw_build_audit_export_dataset() {
 	$taxonomy_term_pages    = isset( $row_counts['taxonomy_term'] ) ? (int) $row_counts['taxonomy_term'] : 0;
 	$taxonomy_landing_pages = mfw_audit_get_public_taxonomy_landing_count();
 	$general_archive_pages  = mfw_audit_get_general_archive_count();
-	$content_views_total    = $published_like + $taxonomy_term_pages + $taxonomy_landing_pages + $general_archive_pages;
+	$content_views_total     = $published_like + $taxonomy_term_pages + $taxonomy_landing_pages + $general_archive_pages;
 
 	$summary = array(
-		'published_like_content'   => $published_like,
-		'taxonomy_term_pages'      => $taxonomy_term_pages,
-		'taxonomy_landing_pages'   => $taxonomy_landing_pages,
-		'general_archive_pages'    => $general_archive_pages,
-		'content_total'            => $content_views_total,
-		'draft_trash_content'      => $draft_trash,
+		'published_like_content' => $published_like,
+		'taxonomy_term_pages'    => $taxonomy_term_pages,
+		'taxonomy_landing_pages' => $taxonomy_landing_pages,
+		'general_archive_pages'  => $general_archive_pages,
+		'content_total'         => $content_views_total,
+		'draft_trash_content'   => $draft_trash,
 	);
 
 	$metadata = array(
@@ -872,7 +969,7 @@ function mfw_generate_audit_export_bundle() {
 	$metadata_file_url  = trailingslashit( $storage['url'] ) . rawurlencode( $metadata_file_name );
 	$metadata['files']  = $bundle_files;
 	$metadata['summary'] = $summary;
-	$metadata_result    = mfw_write_audit_json( $metadata_file_path, $metadata );
+	$metadata_result     = mfw_write_audit_json( $metadata_file_path, $metadata );
 	if ( is_wp_error( $metadata_result ) ) {
 		return $metadata_result;
 	}
@@ -958,7 +1055,7 @@ function mfw_get_audit_record_total( $record ) {
 }
 
 function mfw_get_audit_record_summary( $record ) {
-	$summary   = isset( $record['summary'] ) && is_array( $record['summary'] ) ? $record['summary'] : array();
+	$summary    = isset( $record['summary'] ) && is_array( $record['summary'] ) ? $record['summary'] : array();
 	$row_counts = isset( $record['row_counts'] ) && is_array( $record['row_counts'] ) ? $record['row_counts'] : array();
 
 	$summary['published_like_content'] = isset( $summary['published_like_content'] ) ? (int) $summary['published_like_content'] : 0;
