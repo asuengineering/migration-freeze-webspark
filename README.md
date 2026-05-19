@@ -86,9 +86,10 @@ Settings → Migration Audit Trail
 
 Provides:
 
-- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, and users,
+- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, users, and Yoast SEO,
 - recent export history,
-- and generated content-view summaries for audit planning.
+- generated content-view summaries for audit planning,
+- and migration-oriented rebuild auditing support.
 
 Gravity Forms exports currently capture:
 
@@ -96,6 +97,17 @@ Gravity Forms exports currently capture:
 - per-form notifications,
 - per-form confirmations,
 - and inactive forms marked accordingly.
+
+Yoast SEO exports currently capture:
+
+- editorial SEO overrides for posts, pages, and CPTs,
+- taxonomy SEO overrides,
+- supplemental sitewide SEO settings,
+- Open Graph and Twitter metadata,
+- focus keyphrases,
+- canonical overrides,
+- noindex/nofollow directives,
+- and cornerstone content indicators.
 
 ## My Sites Labels
 
@@ -130,7 +142,7 @@ develop
 Current milestone:
 
 ```text
-v0.6.0
+v0.7.0
 ```
 
 ---

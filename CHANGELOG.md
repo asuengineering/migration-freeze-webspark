@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-05-19
+
+### Added
+
+- Yoast SEO audit export support for posts, pages, CPTs, taxonomy overrides, and sitewide settings.
+- Supplemental SEO export metadata for migration validation and rebuild QA.
+- Direct export links for SEO audit artifacts.
+
+### Changed
+
+- Filtered SEO exports to include only meaningful editorial SEO overrides relevant to Drupal/Webspark rebuild workflows.
+- Corrected Yoast export URL generation to align with the primary audit artifact structure.
+- Encoded supplemental SEO metadata correctly as JSON in CSV exports.
+- Improved Yoast audit export reliability and row-count accuracy.
+
 ## [0.6.0] - 2026-05-19
 
 ### Added
