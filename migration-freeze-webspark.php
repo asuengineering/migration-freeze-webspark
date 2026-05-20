@@ -74,6 +74,7 @@ require_once MFW_PLUGIN_PATH . 'inc/user-management.php';
 require_once MFW_PLUGIN_PATH . 'inc/settings.php';
 require_once MFW_PLUGIN_PATH . 'inc/audit-trail.php';
 require_once MFW_PLUGIN_PATH . 'inc/yoast-audit.php';
+require_once MFW_PLUGIN_PATH . 'inc/redirection-audit.php';
 require_once MFW_PLUGIN_PATH . 'inc/audit-summary-ui.php';
 
 function mfw_bootstrap() {
