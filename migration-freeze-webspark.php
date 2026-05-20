@@ -7,7 +7,7 @@
  * Author URI:      https://comm.engineering.asu.edu
  * Text Domain:     migration-freeze-webspark
  * Domain Path:     /languages
- * Version:         0.7.0
+ * Version:         0.8.0
  *
  * @package         migration_freeze_webspark
  *
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'MFW_VERSION' ) ) {
-	define( 'MFW_VERSION', '0.7.0' );
+	define( 'MFW_VERSION', '0.8.0' );
 }
 
 if ( ! defined( 'MFW_PLUGIN_FILE' ) ) {

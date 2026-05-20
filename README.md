@@ -86,7 +86,7 @@ Settings → Migration Audit Trail
 
 Provides:
 
-- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, users, and Yoast SEO,
+- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, users, Yoast SEO, and redirects,
 - recent export history,
 - generated content-view summaries for audit planning,
 - and migration-oriented rebuild auditing support.
@@ -108,6 +108,17 @@ Yoast SEO exports currently capture:
 - canonical overrides,
 - noindex/nofollow directives,
 - and cornerstone content indicators.
+
+Redirect exports currently capture:
+
+- source and destination URLs,
+- HTTP redirect status codes,
+- regex redirect behavior,
+- query-string handling,
+- redirect grouping,
+- redirect hit counts,
+- redirect timestamps,
+- and supplemental Redirection plugin metadata.
 
 ## My Sites Labels
 
@@ -142,7 +153,7 @@ develop
 Current milestone:
 
 ```text
-v0.7.0
+v0.8.0
 ```
 
 ---

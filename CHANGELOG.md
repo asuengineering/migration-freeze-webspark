@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-05-19
+
+### Added
+
+- Redirection plugin audit export support.
+- Redirect reconstruction exports for Drupal Redirect migration workflows.
+- Dedicated redirects CSV artifact integrated into the audit export pipeline.
+- Redirect metadata preservation including regex/query handling and status codes.
+
+### Changed
+
+- Integrated redirect exports into audit history UI and ZIP bundles.
+- Standardized redirect export structure alongside existing Gravity Forms and Yoast SEO exports.
+- Improved migration audit portability for Drupal/Webspark rebuild planning.
+
 ## [0.7.0] - 2026-05-19
 
 ### Added
@@ -74,31 +89,3 @@ All notable changes to this project will be documented in this file.
 - State-driven user management workflows.
 - My Sites status labels for multisite users.
 - Single-site compatibility safeguards for local development/testing.
-
-### Migration States
-
-- Pending Migration
-- Migration Active
-- Migration Complete
-- UAT Complete
-- Decommissioned
-
-### User Management
-
-- Automatically promote migration team members during active migration.
-- Demote non-team users to subscriber during migration.
-- Remove migration team during UAT completion.
-- Remove site role assignments during decommissioning.
-- Protect the currently logged-in administrator from accidental removal/demotion.
-
-### Safety Improvements
-
-- Single-site fallbacks for multisite-only functions.
-- State transition reporting and action summaries.
-- Automatic creation of missing migration team accounts.
-- Nonce-protected state transitions.
-
-### UI Improvements
-
-- Migration status labels displayed on multisite My Sites screen.
-- Dynamic admin notices reflecting current migration state.
