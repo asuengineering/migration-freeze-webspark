@@ -91,6 +91,17 @@ Provides:
 - generated content-view summaries for audit planning,
 - and migration-oriented rebuild auditing support.
 
+Menu item exports currently capture:
+
+- menu purpose classification,
+- CTA button behavior,
+- CTA button colors,
+- social media icon identifiers,
+- menu item rendering intent,
+- menu item target behavior,
+- submenu button metadata,
+- and supplemental menu rendering metadata.
+
 Gravity Forms exports currently capture:
 
 - forms and form settings relevant to Drupal/Webforms rebuilds,
@@ -153,7 +164,7 @@ develop
 Current milestone:
 
 ```text
-v0.8.0
+v0.8.1
 ```
 
 ---
