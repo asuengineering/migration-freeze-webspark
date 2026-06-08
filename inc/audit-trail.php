@@ -1097,13 +1097,9 @@ function mfw_render_audit_summary_table( $summary ) {
 				<td><?php esc_html_e( 'General archive / index pages', 'migration-freeze-webspark' ); ?></td>
 				<td><?php echo esc_html( $summary['general_archive_pages'] ); ?></td>
 			</tr>
-			<tr style="font-weight:700;">
-				<td><?php esc_html_e( 'Content views', 'migration-freeze-webspark' ); ?></td>
-				<td><?php echo esc_html( $summary['content_total'] ); ?></td>
-			</tr>
-			<tr style="color:#b32d2e;">
-				<td><?php esc_html_e( 'Drafts + Trash', 'migration-freeze-webspark' ); ?></td>
-				<td><?php echo esc_html( $summary['draft_trash_content'] ); ?></td>
+			<tr>
+				<td style="color:#b32d2e;"><?php esc_html_e( 'Drafts + Trash', 'migration-freeze-webspark' ); ?></td>
+				<td style="color:#b32d2e;"><?php echo esc_html( $summary['draft_trash_content'] ); ?></td>
 			</tr>
 		</tbody>
 	</table>
