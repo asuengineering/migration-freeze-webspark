@@ -23,7 +23,7 @@ The plugin supports the following lifecycle states:
 
 | State              | Behavior                                                                     |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Situation Normal   | Plugin is active with no migration warning or user changes                  |
+| Situation Normal   | Plugin is active with no migration warning or user changes                   |
 | Migration Pending  | No user changes                                                              |
 | Migration Active   | Migration team promoted to administrators; other users demoted to subscriber |
 | Migration Complete | No user changes                                                              |
@@ -164,7 +164,7 @@ develop
 Current milestone:
 
 ```text
-v0.8.1
+v0.8.2
 ```
 
 ---

@@ -1,7 +1,6 @@
 {
-  "name": "your-project",
-  "description": "A WPGulp based project.",
-  "version": "0.8.1",
-  "repository": "ahmadawais/WPGulp",
+  "name": "migration-freeze-webspark",
+  "description": "Manage migration states, approved admin access, and user freezes for multisite sites.",
+  "version": "0.8.2",
   "license": "MIT"
 }

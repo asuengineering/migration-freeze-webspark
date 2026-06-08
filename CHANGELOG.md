@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.2] - 2026-06-08
+
+### Fixed
+
+- Corrected content view summary totals displayed in the Migration Audit Trail admin screen.
+- Restored the content total calculation to use the exporter-generated summary values stored in audit history records.
+- Removed legacy summary-reconstruction logic that could overwrite content view totals with raw content row counts.
+
+### Changed
+
+- Simplified audit summary rendering by treating stored audit summary data as the authoritative source for display.
+- Improved clarity of the content summary table labels and total row presentation.
+
 ## [0.8.1] - 2026-05-19
 
 ### Added
