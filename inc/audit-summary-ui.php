@@ -9,32 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-function mfw_fix_audit_history_summary_records( $history ) {
-	if ( ! is_array( $history ) ) {
-		return $history;
-	}
-
-	foreach ( $history as &$record ) {
-		if ( ! is_array( $record ) ) {
-			continue;
-		}
-
-		$row_counts = isset( $record['row_counts'] ) && is_array( $record['row_counts'] ) ? $record['row_counts'] : array();
-		$content_rows = isset( $row_counts['content'] ) ? (int) $row_counts['content'] : 0;
-		$summary = isset( $record['summary'] ) && is_array( $record['summary'] ) ? $record['summary'] : array();
-		$draft_trash = isset( $summary['draft_trash_content'] ) ? (int) $summary['draft_trash_content'] : 0;
-		$published_like = max( 0, $content_rows - $draft_trash );
-
-		$summary['content_total'] = $content_rows;
-		$summary['published_like_content'] = $published_like;
-		$record['summary'] = $summary;
-	}
-	unset( $record );
-
-	return $history;
-}
-add_filter( 'option_mfw_audit_export_history', 'mfw_fix_audit_history_summary_records' );
-
 function mfw_render_audit_summary_ui_fixes() {
 	if ( ! is_admin() || empty( $_GET['page'] ) || 'mfw-migration-audit-trail' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
 		return;
