@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.3] - 2026-10-27
+
+### Changed
+
+- Updated the approved migration team roster to the five currently credentialed team members.
+- Standardized migration team email addresses as each member's ASURITE ID followed by `@asu.edu`.
+
 ## [0.8.2] - 2026-06-08
 
 ### Fixed

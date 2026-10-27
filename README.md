@@ -164,7 +164,7 @@ develop
 Current milestone:
 
 ```text
-v0.8.2
+v0.8.3
 ```
 
 ---
