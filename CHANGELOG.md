@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.4] - 2026-11-23
+
+### Changed
+
+- Updated the approved migration team roster to the eight team members authorized for WordPress backend access.
+- Corrected Rohit Joshi's ASURITE ID to `rjoshi10` from the typo supplied in the access request.
+
 ## [0.8.3] - 2026-10-27
 
 ### Changed

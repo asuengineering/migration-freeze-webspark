@@ -1,6 +1,6 @@
 {
   "name": "migration-freeze-webspark",
   "description": "Manage migration states, approved admin access, and user freezes for multisite sites.",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "license": "MIT"
 }

@@ -18,11 +18,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function mfw_get_migration_assistants() {
 	return array(
-		'pgupt195',
 		'llouis16',
+		'rjoshi10',
+		'pgupt195',
 		'hvyas123',
-		'msompur',
 		'scharan4',
+		'spant126',
+		'rsing343',
+		'ssagar14',
 	);
 }
 
