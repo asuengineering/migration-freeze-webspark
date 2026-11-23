@@ -86,7 +86,7 @@ Settings → Migration Audit Trail
 
 Provides:
 
-- separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, users, Yoast SEO, and redirects,
+- separate export artifacts for content, rendered SEO, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, users, Yoast SEO, and redirects,
 - recent export history,
 - generated content-view summaries for audit planning,
 - and migration-oriented rebuild auditing support.
@@ -119,6 +119,22 @@ Yoast SEO exports currently capture:
 - canonical overrides,
 - noindex/nofollow directives,
 - and cornerstone content indicators.
+
+Rendered SEO exports crawl each published, publicly queryable content URL and capture:
+
+- the effective HTML title, meta description, canonical, and robots directives,
+- `X-Robots-Tag` response headers,
+- Open Graph and Twitter card metadata,
+- alternate-language links,
+- redirects, response status, content type, and per-URL crawl failures,
+- duplicate and conflicting metadata tags,
+- conservative title-pattern candidates and their site/content-type frequency,
+- and all discovered supported values in supplemental JSON.
+
+The rendered export is plugin-agnostic. It records public output produced by Yoast,
+Rank Math, Divi, theme code, WordPress core, or any combination of those systems.
+Only published content already selected by the content audit is crawled; failures are
+reported as rows and do not stop the rest of the audit export.
 
 Redirect exports currently capture:
 

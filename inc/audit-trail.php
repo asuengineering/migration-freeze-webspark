@@ -117,6 +117,53 @@ function mfw_get_audit_artifacts() {
 			'filename' => 'content.csv',
 			'columns' => array( 'environment_name', 'site_id', 'record_type', 'object_type', 'object_id', 'status', 'title', 'url', 'slug', 'parent_id', 'created_at', 'modified_at', 'details_json' ),
 		),
+		'rendered_seo' => array(
+			'label'   => 'Rendered SEO',
+			'filename' => 'rendered-seo.csv',
+			'columns' => array(
+				'environment_name',
+				'site_id',
+				'record_type',
+				'object_type',
+				'object_id',
+				'source_title',
+				'requested_url',
+				'final_url',
+				'http_status',
+				'content_type',
+				'crawl_status',
+				'crawl_error',
+				'html_title',
+				'meta_description',
+				'canonical',
+				'robots',
+				'x_robots_tag',
+				'robot_directives_json',
+				'noindex',
+				'nofollow',
+				'og_title',
+				'og_description',
+				'og_image',
+				'og_image_alt',
+				'og_type',
+				'og_url',
+				'twitter_card',
+				'twitter_title',
+				'twitter_description',
+				'twitter_image',
+				'twitter_image_alt',
+				'hreflang_json',
+				'duplicate_fields',
+				'conflicting_fields',
+				'html_title_pattern',
+				'html_title_pattern_site_count',
+				'html_title_pattern_type_count',
+				'html_title_pattern_scope',
+				'og_title_pattern',
+				'twitter_title_pattern',
+				'details_json',
+			),
+		),
 		'taxonomy_term' => array(
 			'label'   => 'Taxonomies',
 			'filename' => 'taxonomies.csv',
@@ -807,6 +854,7 @@ function mfw_build_audit_export_dataset() {
 	$content_posts = array();
 
 	mfw_audit_collect_content_rows( $artifacts, $context, $content_posts );
+	mfw_rendered_seo_collect_rows( $artifacts, $context, $content_posts );
 	mfw_audit_collect_taxonomy_term_rows( $artifacts, $context );
 	mfw_audit_collect_taxonomy_relationship_rows( $artifacts, $context, $content_posts );
 	mfw_audit_collect_media_rows( $artifacts, $context );
@@ -862,6 +910,7 @@ function mfw_build_audit_export_dataset() {
 		'row_counts'              => $row_counts,
 		'summary'                 => $summary,
 		'warnings'                => $context['warnings'],
+		'rendered_seo_patterns'   => isset( $context['rendered_seo_patterns'] ) ? $context['rendered_seo_patterns'] : array(),
 		'files'                   => array(),
 	);
 
@@ -1115,7 +1164,7 @@ function mfw_render_audit_trail_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Migration Audit Trail', 'migration-freeze-webspark' ); ?></h1>
-		<p><?php esc_html_e( 'Generate separate export artifacts for content, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, and users.', 'migration-freeze-webspark' ); ?></p>
+		<p><?php esc_html_e( 'Generate separate export artifacts for content, rendered SEO, taxonomies, taxonomy relationships, media, menu items, Gravity Forms, and users.', 'migration-freeze-webspark' ); ?></p>
 
 		<?php if ( ! empty( $notice ) ) : ?>
 			<div class="notice <?php echo esc_attr( 'error' === $notice['type'] ? 'notice-error' : 'notice-success' ); ?> is-dismissible"><p><?php echo esc_html( $notice['message'] ); ?></p></div>

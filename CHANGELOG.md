@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Added a plugin-agnostic `rendered-seo.csv` artifact based on the public HTML head of published content.
+- Added effective title, description, canonical, robots, Open Graph, Twitter card, hreflang, response, redirect, duplicate, conflict, and error reporting.
+- Added conservative title-pattern candidates with sitewide and content-type frequency classifications.
+
 ## [0.8.4] - 2026-11-23
 
 ### Changed
