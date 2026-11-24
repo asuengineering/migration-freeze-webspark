@@ -353,20 +353,6 @@ function mfw_rendered_seo_has_robot_directive( $values, $directive ) {
 }
 
 /**
- * Build a compact source identity for analysis matches.
- *
- * @param array $row Rendered SEO row.
- * @return array
- */
-function mfw_rendered_seo_analysis_identity( $row ) {
-	return array(
-		'object_type' => $row['object_type'],
-		'object_id'   => $row['object_id'],
-		'url'         => $row['requested_url'],
-	);
-}
-
-/**
  * Rank title patterns by observed coverage without applying a policy threshold.
  *
  * @param array  $rows Rendered SEO rows.
@@ -383,18 +369,17 @@ function mfw_rendered_seo_title_candidates( $rows, $object_type = '' ) {
 		$population++;
 		$pattern = $row['html_title_pattern'];
 		if ( ! isset( $groups[ $pattern ] ) ) {
-			$groups[ $pattern ] = array();
+			$groups[ $pattern ] = 0;
 		}
-		$groups[ $pattern ][] = mfw_rendered_seo_analysis_identity( $row );
+		$groups[ $pattern ]++;
 	}
 	$candidates = array();
 	foreach ( $groups as $pattern => $matches ) {
 		$candidates[] = array(
 			'pattern'    => $pattern,
-			'matches'    => count( $matches ),
+			'matches'    => $matches,
 			'population' => $population,
-			'coverage'   => $population ? round( ( count( $matches ) / $population ) * 100, 2 ) : 0,
-			'objects'    => $matches,
+			'coverage'   => $population ? round( ( $matches / $population ) * 100, 2 ) : 0,
 		);
 	}
 	usort(
@@ -431,18 +416,17 @@ function mfw_rendered_seo_categorical_summary( $rows, $field, $missing_label = '
 		$population++;
 		$value = isset( $row[ $field ] ) && '' !== $row[ $field ] ? $row[ $field ] : $missing_label;
 		if ( ! isset( $groups[ $value ] ) ) {
-			$groups[ $value ] = array();
+			$groups[ $value ] = 0;
 		}
-		$groups[ $value ][] = mfw_rendered_seo_analysis_identity( $row );
+		$groups[ $value ]++;
 	}
 	$summary = array();
 	foreach ( $groups as $value => $matches ) {
 		$summary[] = array(
 			'value'      => $value,
-			'matches'    => count( $matches ),
+			'matches'    => $matches,
 			'population' => $population,
-			'coverage'   => $population ? round( ( count( $matches ) / $population ) * 100, 2 ) : 0,
-			'objects'    => $matches,
+			'coverage'   => $population ? round( ( $matches / $population ) * 100, 2 ) : 0,
 		);
 	}
 	usort(
@@ -458,39 +442,6 @@ function mfw_rendered_seo_categorical_summary( $rows, $field, $missing_label = '
 		$item = array_merge( array( 'rank' => $index + 1 ), $item );
 	}
 	unset( $item );
-	return $summary;
-}
-
-/**
- * Summarize presence for fields that do not benefit from pattern inference.
- *
- * @param array $rows Rendered SEO rows.
- * @param array $fields Fields to summarize.
- * @return array
- */
-function mfw_rendered_seo_completeness_summary( $rows, $fields ) {
-	$summary    = array();
-	$successful = array_values(
-		array_filter(
-			$rows,
-			static function ( $row ) {
-				return 'success' === $row['crawl_status'];
-			}
-		)
-	);
-	foreach ( $fields as $field ) {
-		$present = 0;
-		foreach ( $successful as $row ) {
-			if ( isset( $row[ $field ] ) && '' !== $row[ $field ] && '[]' !== $row[ $field ] && '{}' !== $row[ $field ] ) {
-				$present++;
-			}
-		}
-		$summary[ $field ] = array(
-			'present'    => $present,
-			'missing'    => count( $successful ) - $present,
-			'population' => count( $successful ),
-		);
-	}
 	return $summary;
 }
 
@@ -517,28 +468,27 @@ function mfw_rendered_seo_robot_agent_summary( $rows ) {
 		foreach ( array_keys( $declared ) as $agent ) {
 			$agent_names[ $agent ] = true;
 		}
-		$records[] = array( 'row' => $row, 'declared' => $declared );
+		$records[] = $declared;
 	}
 	ksort( $agent_names );
 	$summary = array();
 	foreach ( array_keys( $agent_names ) as $agent ) {
 		$sets = array();
 		foreach ( $records as $record ) {
-			$set = isset( $record['declared'][ $agent ] ) ? mfw_rendered_seo_normalize_robots( (array) $record['declared'][ $agent ] ) : 'missing';
+			$set = isset( $record[ $agent ] ) ? mfw_rendered_seo_normalize_robots( (array) $record[ $agent ] ) : 'missing';
 			if ( ! isset( $sets[ $set ] ) ) {
-				$sets[ $set ] = array();
+				$sets[ $set ] = 0;
 			}
-			$sets[ $set ][] = mfw_rendered_seo_analysis_identity( $record['row'] );
+			$sets[ $set ]++;
 		}
 		$population = count( $records );
 		$items = array();
 		foreach ( $sets as $set => $matches ) {
 			$items[] = array(
 				'value'      => $set,
-				'matches'    => count( $matches ),
+				'matches'    => $matches,
 				'population' => $population,
-				'coverage'   => $population ? round( ( count( $matches ) / $population ) * 100, 2 ) : 0,
-				'objects'    => $matches,
+				'coverage'   => $population ? round( ( $matches / $population ) * 100, 2 ) : 0,
 			);
 		}
 		usort(
@@ -557,28 +507,6 @@ function mfw_rendered_seo_robot_agent_summary( $rows ) {
 }
 
 /**
- * Classify whether one field is missing, inherited-equivalent, or different.
- *
- * @param array  $row Rendered SEO row.
- * @param string $field Field to classify.
- * @param array  $references Ordered comparison fields and labels.
- * @return string
- */
-function mfw_rendered_seo_equivalence_value( $row, $field, $references ) {
-	$value = isset( $row[ $field ] ) ? mfw_rendered_seo_normalize_pattern_text( $row[ $field ] ) : '';
-	if ( '' === $value ) {
-		return 'missing';
-	}
-	foreach ( $references as $reference => $label ) {
-		$reference_value = isset( $row[ $reference ] ) ? mfw_rendered_seo_normalize_pattern_text( $row[ $reference ] ) : '';
-		if ( '' !== $reference_value && $value === $reference_value ) {
-			return $label;
-		}
-	}
-	return 'explicitly_different';
-}
-
-/**
  * Build machine-readable aggregate analysis for the Drupal importer.
  *
  * @param array $rows Rendered SEO rows.
@@ -589,7 +517,6 @@ function mfw_rendered_seo_build_analysis( $rows, $metadata ) {
 	$successful = 0;
 	$failed     = 0;
 	$types      = array();
-	$equivalence_rows = array();
 	foreach ( $rows as $row ) {
 		if ( 'success' === $row['crawl_status'] ) {
 			$successful++;
@@ -597,13 +524,6 @@ function mfw_rendered_seo_build_analysis( $rows, $metadata ) {
 		} else {
 			$failed++;
 		}
-		$copy = $row;
-		$copy['og_title_equivalence'] = mfw_rendered_seo_equivalence_value( $row, 'og_title', array( 'html_title' => 'same_as_html_title' ) );
-		$copy['og_description_equivalence'] = mfw_rendered_seo_equivalence_value( $row, 'og_description', array( 'meta_description' => 'same_as_meta_description' ) );
-		$copy['twitter_title_equivalence'] = mfw_rendered_seo_equivalence_value( $row, 'twitter_title', array( 'og_title' => 'same_as_og_title', 'html_title' => 'same_as_html_title' ) );
-		$copy['twitter_description_equivalence'] = mfw_rendered_seo_equivalence_value( $row, 'twitter_description', array( 'og_description' => 'same_as_og_description', 'meta_description' => 'same_as_meta_description' ) );
-		$copy['twitter_image_equivalence'] = mfw_rendered_seo_equivalence_value( $row, 'twitter_image', array( 'og_image' => 'same_as_og_image' ) );
-		$equivalence_rows[] = $copy;
 	}
 	ksort( $types );
 	$type_candidates = array();
@@ -632,17 +552,6 @@ function mfw_rendered_seo_build_analysis( $rows, $metadata ) {
 		'robots'         => array(
 			'directive_sets' => mfw_rendered_seo_categorical_summary( $rows, 'normalized_robots' ),
 			'agents'         => mfw_rendered_seo_robot_agent_summary( $rows ),
-		),
-		'completeness'   => mfw_rendered_seo_completeness_summary(
-			$rows,
-			array( 'meta_description', 'og_title', 'og_description', 'og_image', 'twitter_card', 'twitter_title', 'twitter_description', 'twitter_image', 'hreflang_json' )
-		),
-		'equivalence'    => array(
-			'og_title'            => mfw_rendered_seo_categorical_summary( $equivalence_rows, 'og_title_equivalence' ),
-			'og_description'      => mfw_rendered_seo_categorical_summary( $equivalence_rows, 'og_description_equivalence' ),
-			'twitter_title'       => mfw_rendered_seo_categorical_summary( $equivalence_rows, 'twitter_title_equivalence' ),
-			'twitter_description' => mfw_rendered_seo_categorical_summary( $equivalence_rows, 'twitter_description_equivalence' ),
-			'twitter_image'       => mfw_rendered_seo_categorical_summary( $equivalence_rows, 'twitter_image_equivalence' ),
 		),
 	);
 }

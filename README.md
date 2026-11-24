@@ -130,15 +130,17 @@ Rendered SEO exports crawl each published content record that has a permalink an
 - duplicate and conflicting metadata tags,
 - and all discovered supported values in supplemental JSON.
 
-The companion `rendered-seo-analysis.json` artifact provides importer-oriented
-aggregate analysis without deciding which Drupal defaults to apply. It includes:
+The companion `rendered-seo-analysis.json` artifact is intentionally limited to
+importer-oriented pattern discovery. It includes:
 
-- ranked title patterns with counts, coverage, and matching source identities,
+- ranked title patterns with counts and coverage,
 - title candidates grouped sitewide and by content type,
 - self-referencing, internal override, external override, missing, and invalid canonical classifications,
-- normalized robots directive sets with counts and coverage,
-- metadata presence counts,
-- and Open Graph/Twitter equivalence and fallback classifications.
+- and normalized robots directive sets with counts and coverage.
+
+The analysis JSON contains aggregate measurements only. Source identities and all
+page-level SEO values remain in `rendered-seo.csv`, which prevents the aggregate
+artifact from duplicating the migration dataset.
 
 The rendered export is plugin-agnostic. It records public output produced by Yoast,
 Rank Math, Divi, theme code, WordPress core, or any combination of those systems.

@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Added a plugin-agnostic `rendered-seo.csv` artifact based on the public HTML head of published content.
 - Added effective title, description, canonical, robots, Open Graph, Twitter card, hreflang, response, redirect, duplicate, conflict, and error reporting.
-- Added conservative title-pattern candidates with sitewide and content-type frequency classifications.
+- Added ranked title-pattern candidates with sitewide and content-type counts and coverage.
 
 ### Fixed
 
@@ -18,11 +18,14 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Updated the beta version to `0.9.0-beta.3`.
-- Replaced threshold-based title recommendations with ranked candidates, match counts, coverage, and source identities.
+- Replaced threshold-based title recommendations with ranked candidates, match counts, and coverage.
 - Added punctuation normalization so typographic quotation marks and dashes do not create false title-pattern exceptions.
 - Added row-level canonical classifications and normalized robots directive sets.
 - Moved aggregate rendered SEO discovery into a dedicated `rendered-seo-analysis.json` artifact.
-- Added presence and social-metadata equivalence summaries without inferring description or image templates.
+- Updated the beta version to `0.9.0-beta.4`.
+- Limited `rendered-seo-analysis.json` to title, canonical, and robots pattern discovery plus crawl population.
+- Removed repeated source identities, completeness summaries, and social fallback analysis from the aggregate JSON.
+- Kept all page-level evidence and importer lookup fields in `rendered-seo.csv`.
 
 ## [0.8.4] - 2026-11-23
 
