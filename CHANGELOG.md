@@ -15,6 +15,15 @@ All notable changes to this project will be documented in this file.
 - Corrected rendered SEO selection so published content with a permalink is crawled even when its registered post type does not expose a truthy `publicly_queryable` property.
 - Synchronized the plugin header and runtime version constant at `0.9.0-beta.2`.
 
+### Changed
+
+- Updated the beta version to `0.9.0-beta.3`.
+- Replaced threshold-based title recommendations with ranked candidates, match counts, coverage, and source identities.
+- Added punctuation normalization so typographic quotation marks and dashes do not create false title-pattern exceptions.
+- Added row-level canonical classifications and normalized robots directive sets.
+- Moved aggregate rendered SEO discovery into a dedicated `rendered-seo-analysis.json` artifact.
+- Added presence and social-metadata equivalence summaries without inferring description or image templates.
+
 ## [0.8.4] - 2026-11-23
 
 ### Changed

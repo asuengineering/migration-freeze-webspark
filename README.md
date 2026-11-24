@@ -128,13 +128,23 @@ Rendered SEO exports crawl each published content record that has a permalink an
 - alternate-language links,
 - redirects, response status, content type, and per-URL crawl failures,
 - duplicate and conflicting metadata tags,
-- conservative title-pattern candidates and their site/content-type frequency,
 - and all discovered supported values in supplemental JSON.
+
+The companion `rendered-seo-analysis.json` artifact provides importer-oriented
+aggregate analysis without deciding which Drupal defaults to apply. It includes:
+
+- ranked title patterns with counts, coverage, and matching source identities,
+- title candidates grouped sitewide and by content type,
+- self-referencing, internal override, external override, missing, and invalid canonical classifications,
+- normalized robots directive sets with counts and coverage,
+- metadata presence counts,
+- and Open Graph/Twitter equivalence and fallback classifications.
 
 The rendered export is plugin-agnostic. It records public output produced by Yoast,
 Rank Math, Divi, theme code, WordPress core, or any combination of those systems.
 Only published content already selected by the content audit is crawled; failures are
-reported as rows and do not stop the rest of the audit export.
+reported as rows and do not stop the rest of the audit export. The analysis reports
+observed candidates and coverage without applying a minimum-coverage threshold.
 
 Redirect exports currently capture:
 

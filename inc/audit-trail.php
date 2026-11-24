@@ -136,9 +136,11 @@ function mfw_get_audit_artifacts() {
 				'html_title',
 				'meta_description',
 				'canonical',
+				'canonical_class',
 				'robots',
 				'x_robots_tag',
 				'robot_directives_json',
+				'normalized_robots',
 				'noindex',
 				'nofollow',
 				'og_title',
@@ -156,11 +158,6 @@ function mfw_get_audit_artifacts() {
 				'duplicate_fields',
 				'conflicting_fields',
 				'html_title_pattern',
-				'html_title_pattern_site_count',
-				'html_title_pattern_type_count',
-				'html_title_pattern_scope',
-				'og_title_pattern',
-				'twitter_title_pattern',
 				'details_json',
 			),
 		),
@@ -910,7 +907,6 @@ function mfw_build_audit_export_dataset() {
 		'row_counts'              => $row_counts,
 		'summary'                 => $summary,
 		'warnings'                => $context['warnings'],
-		'rendered_seo_patterns'   => isset( $context['rendered_seo_patterns'] ) ? $context['rendered_seo_patterns'] : array(),
 		'files'                   => array(),
 	);
 
@@ -1010,6 +1006,24 @@ function mfw_generate_audit_export_bundle() {
 			'url'  => $file_url,
 			'size' => file_exists( $file_path ) ? filesize( $file_path ) : 0,
 			'rows' => isset( $context['row_counts'][ $artifact_key ] ) ? (int) $context['row_counts'][ $artifact_key ] : 0,
+		);
+	}
+
+	if ( ! empty( $context['rendered_seo_analysis'] ) ) {
+		$analysis_file_name = $export_prefix . '-rendered-seo-analysis.json';
+		$analysis_file_path = trailingslashit( $storage['dir'] ) . $analysis_file_name;
+		$analysis_file_url  = trailingslashit( $storage['url'] ) . rawurlencode( $analysis_file_name );
+		$analysis_result    = mfw_write_audit_json( $analysis_file_path, $context['rendered_seo_analysis'] );
+		if ( is_wp_error( $analysis_result ) ) {
+			return $analysis_result;
+		}
+		$bundle_files[] = array(
+			'type' => 'rendered_seo_analysis',
+			'name' => $analysis_file_name,
+			'path' => $analysis_file_path,
+			'url'  => $analysis_file_url,
+			'size' => file_exists( $analysis_file_path ) ? filesize( $analysis_file_path ) : 0,
+			'rows' => 1,
 		);
 	}
 
