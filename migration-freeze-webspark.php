@@ -7,7 +7,7 @@
  * Author URI:      https://comm.engineering.asu.edu
  * Text Domain:     migration-freeze-webspark
  * Domain Path:     /languages
- * Version:         0.8.4
+ * Version:         0.9.0-beta.1
  *
  * @package         migration_freeze_webspark
  *
