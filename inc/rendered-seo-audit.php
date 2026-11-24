@@ -314,8 +314,7 @@ function mfw_rendered_seo_annotate_patterns( &$rows ) {
  */
 function mfw_rendered_seo_collect_rows( &$artifacts, &$metadata, $content_posts ) {
 	foreach ( $content_posts as $post ) {
-		$post_type = get_post_type_object( $post->post_type );
-		if ( 'publish' !== $post->post_status || ! $post_type || empty( $post_type->publicly_queryable ) ) {
+		if ( 'publish' !== $post->post_status ) {
 			continue;
 		}
 		$url = get_permalink( $post );

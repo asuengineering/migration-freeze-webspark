@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 - Added effective title, description, canonical, robots, Open Graph, Twitter card, hreflang, response, redirect, duplicate, conflict, and error reporting.
 - Added conservative title-pattern candidates with sitewide and content-type frequency classifications.
 
+### Fixed
+
+- Corrected rendered SEO selection so published content with a permalink is crawled even when its registered post type does not expose a truthy `publicly_queryable` property.
+- Synchronized the plugin header and runtime version constant at `0.9.0-beta.2`.
+
 ## [0.8.4] - 2026-11-23
 
 ### Changed

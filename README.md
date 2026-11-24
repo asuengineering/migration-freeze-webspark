@@ -120,7 +120,7 @@ Yoast SEO exports currently capture:
 - noindex/nofollow directives,
 - and cornerstone content indicators.
 
-Rendered SEO exports crawl each published, publicly queryable content URL and capture:
+Rendered SEO exports crawl each published content record that has a permalink and capture:
 
 - the effective HTML title, meta description, canonical, and robots directives,
 - `X-Robots-Tag` response headers,
